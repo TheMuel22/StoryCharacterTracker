@@ -1,0 +1,1377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Character Tracker - Writer's Studio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-screen {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+            min-width: 400px;
+        }
+        
+        .login-screen h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .login-screen p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .login-form input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+        
+        .login-form input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .login-form button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .login-form button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .login-error {
+            color: #e74c3c;
+            margin-top: 15px;
+            font-weight: 500;
+        }
+        
+        /* Main App Styles */
+        .app-container {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            background: #f5f7fa;
+            overflow: hidden;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .header-controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff6b6b;
+        }
+        
+        .status-dot.connected {
+            background: #51cf66;
+        }
+        
+        .logout-btn, .sync-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .logout-btn:hover, .sync-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        /* Layout */
+        .main-layout {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 350px;
+            background: white;
+            border-right: 1px solid #e1e5e9;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .sidebar-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .sidebar-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        /* Characters Tab */
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .character-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .character-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        
+        .character-card.deceased {
+            opacity: 0.7;
+            background: #f1f3f4;
+        }
+        
+        .character-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 10px auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            overflow: hidden;
+        }
+        
+        .character-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .character-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        .character-details {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.3;
+        }
+        
+        /* Chapters Tab */
+        .chapters-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .chapter-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #667eea;
+        }
+        
+        .chapter-item:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+        
+        .chapter-item.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .chapter-info {
+            flex: 1;
+        }
+        
+        .chapter-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        
+        .chapter-meta {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .chapter-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .chapter-btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .chapter-btn.edit {
+            background: #28a745;
+            color: white;
+        }
+        
+        .chapter-btn.delete {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .add-chapter-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+        
+        .add-chapter-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Map Tab */
+        .map-container {
+            width: 100%;
+            height: 300px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            background: #f8f9fa;
+        }
+        
+        .map-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            cursor: grab;
+        }
+        
+        .map-pin {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 10;
+        }
+        
+        .map-pin:hover {
+            transform: scale(1.2);
+        }
+        
+        .map-pin.character {
+            background: #28a745;
+        }
+        
+        .map-pin.place {
+            background: #667eea;
+        }
+        
+        /* Main Editor */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            overflow: hidden;
+        }
+        
+        .editor-toolbar {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e1e5e9;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .editor-title {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            min-width: 200px;
+        }
+        
+        .editor-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .editor-tools {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .tool-btn {
+            padding: 8px 12px;
+            border: 1px solid #e1e5e9;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .tool-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .editor-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .story-editor {
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            line-height: 1.6;
+            resize: none;
+            background: transparent;
+            font-family: 'Georgia', serif;
+        }
+        
+        .story-editor:focus {
+            outline: none;
+        }
+        
+        /* Character Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            margin: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .character-photo {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #fff;
+            margin: 0 auto 20px auto;
+            display: block;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .character-initials-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: bold;
+            margin: 0 auto 20px auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .info-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .info-item.deceased {
+            border-left-color: #6c757d;
+            background: #f1f3f4;
+        }
+        
+        .info-label {
+            font-size: 11px;
+            color: #6c757d;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-value {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: background 0.2s;
+        }
+        
+        .close-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 300px;
+            }
+            
+            .character-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+            
+            .character-avatar {
+                width: 60px;
+                height: 60px;
+                font-size: 20px;
+            }
+            
+            .editor-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .editor-stats {
+                justify-content: space-between;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Loading States */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e1e5e9;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Server Connection */
+        .connection-panel {
+            background: white;
+            border: 2px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .connection-panel.connected {
+            border-color: #55a3ff;
+            background: #e3f2fd;
+        }
+        
+        .connection-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .connection-btn {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .connection-status-text {
+            font-size: 12px;
+            text-align: center;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <h1>🏰 Story Writer's Studio</h1>
+        <p>Your complete story writing companion</p>
+        <div class="login-form">
+            <input type="password" id="passwordInput" placeholder="Enter password..." />
+            <button id="loginBtn">🔐 Enter Studio</button>
+            <div id="loginError" class="login-error"></div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏰 Story Writer's Studio</h1>
+            <div class="header-controls">
+                <div class="connection-status">
+                    <div id="statusDot" class="status-dot"></div>
+                    <span id="statusText">Connecting...</span>
+                </div>
+                <button id="syncBtn" class="sync-btn">🔄 Sync</button>
+                <button id="logoutBtn" class="logout-btn">🚪 Exit</button>
+            </div>
+        </div>
+
+        <div class="main-layout">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Connection Panel -->
+                <div id="connectionPanel" class="connection-panel">
+                    <input type="text" id="serverUrl" class="connection-input" 
+                           value="http://localhost:8000" placeholder="Server URL">
+                    <button id="connectBtn" class="connection-btn">🔗 Connect</button>
+                    <div id="connectionStatus" class="connection-status-text">Not connected</div>
+                </div>
+
+                <!-- Sidebar Tabs -->
+                <div class="sidebar-tabs">
+                    <button class="sidebar-tab active" data-tab="characters">👥 Characters</button>
+                    <button class="sidebar-tab" data-tab="chapters">📚 Chapters</button>
+                    <button class="sidebar-tab" data-tab="map">🗺️ Map</button>
+                </div>
+
+                <!-- Sidebar Content -->
+                <div class="sidebar-content">
+                    <!-- Characters Tab -->
+                    <div id="charactersTab" class="tab-content active">
+                        <div id="charactersGrid" class="character-grid">
+                            <div class="loading">Loading characters...</div>
+                        </div>
+                    </div>
+
+                    <!-- Chapters Tab -->
+                    <div id="chaptersTab" class="tab-content" style="display: none;">
+                        <div id="chaptersList" class="chapters-list">
+                            <div class="loading">Loading chapters...</div>
+                        </div>
+                        <button id="addChapterBtn" class="add-chapter-btn">📝 Add New Chapter</button>
+                    </div>
+
+                    <!-- Map Tab -->
+                    <div id="mapTab" class="tab-content" style="display: none;">
+                        <div id="mapContainer" class="map-container">
+                            <div class="loading">Loading map...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Editor Area -->
+            <div class="editor-area">
+                <div class="editor-toolbar">
+                    <div id="editorTitle" class="editor-title">Select a chapter to start writing</div>
+                    <div class="editor-stats">
+                        <div class="stat-item">
+                            <span>📊</span>
+                            <span id="wordCount">0 words</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>📝</span>
+                            <span id="charCount">0 characters</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>⏱️</span>
+                            <span id="readTime">0 min read</span>
+                        </div>
+                    </div>
+                    <div class="editor-tools">
+                        <button class="tool-btn" id="spellCheckBtn" title="Spell Check">📖 Spell Check</button>
+                        <button class="tool-btn" id="thesaurusBtn" title="Thesaurus">📚 Thesaurus</button>
+                        <button class="tool-btn" id="saveBtn" title="Save Chapter">💾 Save</button>
+                    </div>
+                </div>
+                
+                <div class="editor-content">
+                    <textarea id="storyEditor" class="story-editor" 
+                              placeholder="Select a chapter from the sidebar to start writing your story..."></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Character Detail Modal -->
+    <div id="characterModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalCharacterName">Character Details</h2>
+                <button class="close-btn" onclick="closeCharacterModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content will be filled by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const APP_PASSWORD = 'Linsey123';
+        
+        // State
+        let isLoggedIn = false;
+        let connected = false;
+        let serverUrl = '';
+        let characters = [];
+        let places = [];
+        let storyData = null;
+        let mapData = null;
+        let currentChapter = null;
+        let currentContent = '';
+        
+        // DOM Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const mainApp = document.getElementById('mainApp');
+        const passwordInput = document.getElementById('passwordInput');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const serverUrlInput = document.getElementById('serverUrl');
+        const connectBtn = document.getElementById('connectBtn');
+        const syncBtn = document.getElementById('syncBtn');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const connectionPanel = document.getElementById('connectionPanel');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const charactersGrid = document.getElementById('charactersGrid');
+        const chaptersList = document.getElementById('chaptersList');
+        const addChapterBtn = document.getElementById('addChapterBtn');
+        const mapContainer = document.getElementById('mapContainer');
+        const editorTitle = document.getElementById('editorTitle');
+        const storyEditor = document.getElementById('storyEditor');
+        const wordCount = document.getElementById('wordCount');
+        const charCount = document.getElementById('charCount');
+        const readTime = document.getElementById('readTime');
+        const spellCheckBtn = document.getElementById('spellCheckBtn');
+        const thesaurusBtn = document.getElementById('thesaurusBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const characterModal = document.getElementById('characterModal');
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            checkLoginStatus();
+        });
+        
+        function setupEventListeners() {
+            // Login
+            loginBtn.addEventListener('click', handleLogin);
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') handleLogin();
+            });
+            logoutBtn.addEventListener('click', handleLogout);
+            
+            // Connection
+            connectBtn.addEventListener('click', testConnection);
+            syncBtn.addEventListener('click', syncAllData);
+            
+            // Sidebar tabs
+            document.querySelectorAll('.sidebar-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    switchTab(this.getAttribute('data-tab'));
+                });
+            });
+            
+            // Chapter management
+            addChapterBtn.addEventListener('click', addNewChapter);
+            
+            // Editor
+            storyEditor.addEventListener('input', updateEditorStats);
+            storyEditor.addEventListener('input', autoSave);
+            
+            // Tools
+            spellCheckBtn.addEventListener('click', runSpellCheck);
+            thesaurusBtn.addEventListener('click', openThesaurus);
+            saveBtn.addEventListener('click', saveCurrentChapter);
+            
+            // Modal
+            characterModal.addEventListener('click', function(e) {
+                if (e.target === characterModal) {
+                    closeCharacterModal();
+                }
+            });
+            
+            // Auto-connect on load
+            setTimeout(testConnection, 500);
+        }
+        
+        function checkLoginStatus() {
+            const wasLoggedIn = localStorage.getItem('storyTrackerLoggedIn') === 'true';
+            if (wasLoggedIn) {
+                showMainApp();
+            } else {
+                showLoginScreen();
+            }
+        }
+        
+        function handleLogin() {
+            const password = passwordInput.value;
+            if (password === APP_PASSWORD) {
+                isLoggedIn = true;
+                localStorage.setItem('storyTrackerLoggedIn', 'true');
+                loginError.textContent = '';
+                showMainApp();
+            } else {
+                loginError.textContent = '❌ Incorrect password. Try: Linsey123';
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        }
+        
+        function handleLogout() {
+            isLoggedIn = false;
+            localStorage.removeItem('storyTrackerLoggedIn');
+            passwordInput.value = '';
+            showLoginScreen();
+        }
+        
+        function showLoginScreen() {
+            loginScreen.style.display = 'flex';
+            mainApp.style.display = 'none';
+            passwordInput.focus();
+        }
+        
+        function showMainApp() {
+            loginScreen.style.display = 'none';
+            mainApp.style.display = 'block';
+        }
+        
+        function testConnection() {
+            serverUrl = serverUrlInput.value.trim();
+            if (!serverUrl) {
+                updateConnectionStatus('Please enter server URL', false);
+                return;
+            }
+            
+            updateConnectionStatus('Testing connection...', false);
+            
+            fetch(`${serverUrl}/api/characters`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    connected = true;
+                    const charCount = Array.isArray(data) ? data.length : Object.keys(data).length;
+                    updateConnectionStatus(`Connected! Found ${charCount} characters`, true);
+                    syncAllData();
+                })
+                .catch(error => {
+                    connected = false;
+                    updateConnectionStatus(`Connection failed: ${error.message}`, false);
+                });
+        }
+        
+        function updateConnectionStatus(message, isConnected) {
+            connectionStatus.textContent = message;
+            statusText.textContent = isConnected ? 'Connected' : 'Disconnected';
+            
+            if (isConnected) {
+                connectionPanel.classList.add('connected');
+                statusDot.classList.add('connected');
+            } else {
+                connectionPanel.classList.remove('connected');
+                statusDot.classList.remove('connected');
+            }
+            
+            connected = isConnected;
+        }
+        
+        function syncAllData() {
+            if (!connected) {
+                alert('❌ Not connected to server. Test connection first.');
+                return;
+            }
+            
+            updateConnectionStatus('Syncing all data...', true);
+            
+            Promise.all([
+                loadCharacters(),
+                loadStoryData(),
+                loadMapData()
+            ]).then(() => {
+                renderCharacters();
+                renderChapters();
+                renderMap();
+                updateConnectionStatus(`Sync complete! ${characters.length} characters loaded`, true);
+            }).catch(error => {
+                console.error('Sync error:', error);
+                updateConnectionStatus(`Sync failed: ${error.message}`, false);
+            });
+        }
+        
+        function loadCharacters() {
+            return fetch(`${serverUrl}/api/characters`)
+                .then(response => response.json())
+                .then(data => {
+                    characters = [];
+                    
+                    if (Array.isArray(data)) {
+                        data.forEach((char, index) => {
+                            const charId = char.id || `char_${index}`;
+                            processCharacter(charId, char);
+                        });
+                    } else if (typeof data === 'object') {
+                        Object.keys(data).forEach(charId => {
+                            const char = data[charId];
+                            processCharacter(charId, char);
+                        });
+                    }
+                    
+                    console.log(`Loaded ${characters.length} characters`);
+                });
+        }
+        
+        function processCharacter(charId, char) {
+            let firstName = '';
+            let lastName = '';
+            let title = '';
+            let age = '';
+            let gender = '';
+            let location = '';
+            let deceased = false;
+            let region = '';
+            let photoPath = '';
+            
+            let personality = '';
+            let skills = '';
+            let backstory = '';
+            let goals = '';
+            let fears = '';
+            let notes = '';
+            let physical = {};
+            
+            if (char.basic_info) {
+                firstName = char.basic_info.first_name || '';
+                lastName = char.basic_info.last_name || '';
+                title = char.basic_info.title || '';
+                age = char.basic_info.age || '';
+                location = char.basic_info.home || char.basic_info.current_location || '';
+                region = char.basic_info.region || '';
+                deceased = char.deceased || false;
+                photoPath = char.photo_path || '';
+                
+                personality = char.personality || '';
+                skills = char.skills || '';
+                backstory = char.backstory || '';
+                goals = char.goals || '';
+                fears = char.fears || '';
+                notes = char.notes || '';
+                physical = char.physical || {};
+                gender = char.basic_info.gender || physical.gender || '';
+            } else {
+                firstName = char.first_name || char.firstName || '';
+                lastName = char.last_name || char.lastName || '';
+                title = char.title || '';
+                age = char.age || '';
+                gender = char.gender || '';
+                location = char.home || char.location || char.current_location || '';
+                region = char.region || '';
+                deceased = char.deceased || false;
+                photoPath = char.photo_path || char.photoPath || '';
+                
+                personality = char.personality || '';
+                skills = char.skills || '';
+                backstory = char.backstory || '';
+                goals = char.goals || '';
+                fears = char.fears || '';
+                notes = char.notes || '';
+                physical = char.physical || {};
+            }
+            
+            const fullName = `${firstName} ${lastName}`.trim();
+            
+            if (fullName) {
+                characters.push({
+                    id: charId,
+                    name: fullName,
+                    firstName: firstName,
+                    lastName: lastName,
+                    title: title,
+                    age: age,
+                    gender: gender,
+                    location: location,
+                    deceased: deceased,
+                    region: region,
+                    photoPath: photoPath,
+                    personality: personality,
+                    skills: skills,
+                    backstory: backstory,
+                    goals: goals,
+                    fears: fears,
+                    notes: notes,
+                    physical: physical,
+                    rawData: char
+                });
+            }
+        }
+        
+        function loadStoryData() {
+            return fetch(`${serverUrl}/api/story`)
+                .then(response => response.json())
+                .then(data => {
+                    storyData = data;
+                    console.log(`Loaded ${data.total_files || 0} story files`);
+                })
+                .catch(error => {
+                    console.log('Story API failed:', error);
+                    storyData = null;
+                });
+        }
+        
+        function loadMapData() {
+            return fetch(`${serverUrl}/api/map`)
+                .then(response => response.json())
+                .then(data => {
+                    mapData = data;
+                    console.log(`Loaded map with ${data.map_pins ? data.map_pins.length : 0} pins`);
+                })
+                .catch(error => {
+                    console.log('Map API failed:', error);
+                    mapData = null;
+                });
+        }
+        
+        function renderCharacters() {
+            if (characters.length === 0) {
+                charactersGrid.innerHTML = '<div class="loading">No characters found</div>';
+                return;
+            }
+            
+            charactersGrid.innerHTML = characters.map(char => {
+                const initials = char.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                const statusIcon = char.deceased ? '💀' : '';
+                
+                return `
+                    <div class="character-card ${char.deceased ? 'deceased' : ''}" onclick="showCharacterModal('${char.id}')">
+                        <div class="character-avatar">
+                            ${char.photoPath ? 
+                                `<img src="${serverUrl}/api/character/photo/${char.id}" alt="${char.name}" onerror="this.style.display='none'; this.parentNode.textContent='${initials}';">` :
+                                initials
+                            }
+                        </div>
+                        <div class="character-name">${statusIcon} ${char.name}</div>
+                        <div class="character-details">
+                            ${char.title ? `${char.title}<br>` : ''}
+                            ${char.age ? `Age ${char.age}<br>` : ''}
+                            ${char.location ? `📍 ${char.location}` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderChapters() {
+            if (!storyData || !storyData.files || storyData.files.length === 0) {
+                chaptersList.innerHTML = '<div class="loading">No chapters found</div>';
+                return;
+            }
+            
+            chaptersList.innerHTML = storyData.files.map(chapter => {
+                const words = chapter.full_content ? chapter.full_content.split(' ').length : 0;
+                const readTime = Math.ceil(words / 200); // Average reading speed
+                
+                return `
+                    <div class="chapter-item" onclick="loadChapter('${chapter.filename}')">
+                        <div class="chapter-info">
+                            <div class="chapter-title">${chapter.title}</div>
+                            <div class="chapter-meta">${words} words • ${readTime} min read</div>
+                        </div>
+                        <div class="chapter-actions">
+                            <button class="chapter-btn edit" onclick="event.stopPropagation(); editChapter('${chapter.filename}')">Edit</button>
+                            <button class="chapter-btn delete" onclick="event.stopPropagation(); deleteChapter('${chapter.filename}')">Delete</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function renderMap() {
+            if (!mapData || !mapData.map_pins) {
+                mapContainer.innerHTML = '<div class="loading">No map data available</div>';
+                return;
+            }
+            
+            // For now, just show pin info - actual map image loading would require more API work
+            mapContainer.innerHTML = `
+                <div class="loading">Map with ${mapData.map_pins.length} pins loaded</div>
+                <div style="padding: 15px; font-size: 12px;">
+                    ${mapData.map_pins.slice(0, 5).map(pin => 
+                        `<div style="margin: 5px 0;">📍 ${pin.label} (${pin.type})</div>`
+                    ).join('')}
+                    ${mapData.map_pins.length > 5 ? `<div>... and ${mapData.map_pins.length - 5} more pins</div>` : ''}
+                </div>
+            `;
+        }
+        
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.sidebar-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            
+            // Show/hide tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.getElementById(`${tabName}Tab`).style.display = 'block';
+        }
+        
+        function loadChapter(filename) {
+            if (!storyData) return;
+            
+            const chapter = storyData.files.find(f => f.filename === filename);
+            if (!chapter) return;
+            
+            currentChapter = chapter;
+            currentContent = chapter.full_content;
+            
+            editorTitle.textContent = chapter.title;
+            storyEditor.value = currentContent;
+            storyEditor.disabled = false;
+            
+            // Update active chapter
+            document.querySelectorAll('.chapter-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.chapter-item').classList.add('active');
+            
+            updateEditorStats();
+        }
+        
+        function updateEditorStats() {
+            const text = storyEditor.value;
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            const characters = text.length;
+            const readingTime = Math.ceil(words / 200);
+            
+            wordCount.textContent = `${words} words`;
+            charCount.textContent = `${characters} characters`;
+            readTime.textContent = `${readingTime} min read`;
+        }
+        
+        function addNewChapter() {
+            const title = prompt('Enter chapter title:');
+            if (!title) return;
+            
+            // This would typically create a new file on the server
+            console.log('Creating new chapter:', title);
+            alert('New chapter creation will be implemented with server API');
+        }
+        
+        function editChapter(filename) {
+            console.log('Edit chapter:', filename);
+            // Load chapter for editing
+            loadChapter(filename);
+        }
+        
+        function deleteChapter(filename) {
+            if (confirm(`Are you sure you want to delete this chapter?`)) {
+                console.log('Delete chapter:', filename);
+                alert('Chapter deletion will be implemented with server API');
+            }
+        }
+        
+        function autoSave() {
+            // Auto-save after 2 seconds of no typing
+            clearTimeout(window.autoSaveTimer);
+            window.autoSaveTimer = setTimeout(() => {
+                if (currentChapter) {
+                    console.log('Auto-saving chapter...');
+                    // Implement auto-save to server
+                }
+            }, 2000);
+        }
+        
+        function saveCurrentChapter() {
+            if (!currentChapter) {
+                alert('No chapter selected');
+                return;
+            }
+            
+            console.log('Saving chapter:', currentChapter.filename);
+            alert('Chapter saving will be implemented with server API');
+        }
+        
+        function runSpellCheck() {
+            // Basic spell check using browser API
+            const text = storyEditor.value;
+            console.log('Running spell check on', text.length, 'characters');
+            alert('Spell check feature will be enhanced with proper dictionary API');
+        }
+        
+        function openThesaurus() {
+            const selectedText = storyEditor.value.substring(storyEditor.selectionStart, storyEditor.selectionEnd);
+            if (selectedText) {
+                console.log('Looking up:', selectedText);
+                alert(`Thesaurus lookup for: "${selectedText}"\nThis will be implemented with a thesaurus API`);
+            } else {
+                alert('Please select a word to look up in the thesaurus');
+            }
+        }
+        
+        function showCharacterModal(characterId) {
+            const character = characters.find(c => c.id === characterId);
+            if (!character) return;
+            
+            document.getElementById('modalCharacterName').textContent = character.name;
+            
+            let photoHtml = '';
+            if (character.photoPath) {
+                photoHtml = `<img src="${serverUrl}/api/character/photo/${character.id}" class="character-photo" alt="${character.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`;
+                photoHtml += `<div class="character-initials-large" style="display: none;">${character.name.split(' ').map(n => n[0]).join('').toUpperCase()}</div>`;
+            } else {
+                photoHtml = `<div class="character-initials-large">${character.name.split(' ').map(n => n[0]).join('').toUpperCase()}</div>`;
+            }
+            
+            const infoItems = [
+                { label: 'Full Name', value: character.name },
+                { label: 'Title', value: character.title || 'None' },
+                { label: 'Age', value: character.age || 'Unknown' },
+                { label: 'Gender', value: character.gender || 'Unknown' },
+                { label: 'Location', value: character.location || 'Unknown' },
+                { label: 'Region', value: character.region || 'Unknown' },
+                { label: 'Status', value: character.deceased ? 'Deceased 💀' : 'Alive' }
+            ];
+            
+            const infoGridHtml = infoItems.map(item => `
+                <div class="info-item ${character.deceased ? 'deceased' : ''}">
+                    <div class="info-label">${item.label}</div>
+                    <div class="info-value">${item.value}</div>
+                </div>
+            `).join('');
+            
+            const textSections = [
+                { title: 'Personality', content: character.personality },
+                { title: 'Skills', content: character.skills },
+                { title: 'Backstory', content: character.backstory },
+                { title: 'Goals', content: character.goals },
+                { title: 'Fears', content: character.fears },
+                { title: 'Notes', content: character.notes }
+            ].filter(section => section.content && section.content.trim());
+            
+            const textSectionsHtml = textSections.map(section => `
+                <div style="margin: 15px 0;">
+                    <h4 style="color: #333; margin-bottom: 8px;">${section.title}</h4>
+                    <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #667eea; font-size: 14px; line-height: 1.5;">
+                        ${section.content}
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('modalBody').innerHTML = `
+                ${photoHtml}
+                <div class="info-grid">
+                    ${infoGridHtml}
+                </div>
+                ${textSectionsHtml}
+            `;
+            
+            characterModal.style.display = 'flex';
+        }
+        
+        function closeCharacterModal() {
+            characterModal.style.display = 'none';
+        }
+        
+        // Auto-focus password field
+        passwordInput.focus();
+    </script>
+</body>
+</html>
