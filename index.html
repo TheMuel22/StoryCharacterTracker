@@ -1060,41 +1060,56 @@
             
             updateConnectionStatus('Syncing all data...', true);
             
-            Promise.all([
-                loadCharacters(),
-                loadStoryData(),
-                loadMapData()
+            // Add timeout to prevent infinite syncing
+            const syncTimeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Sync timeout after 10 seconds')), 10000)
+            );
+            
+            Promise.race([
+                Promise.all([
+                    loadCharacters(),
+                    loadStoryData(),
+                    loadMapData()
+                ]),
+                syncTimeout
             ]).then(() => {
                 renderCharacters();
                 renderChapters();
                 renderMap();
-                updateConnectionStatus(`Sync complete! ${characters.length} characters loaded`, true);
+                updateConnectionStatus(`✅ Sync complete! ${characters.length} characters loaded`, true);
             }).catch(error => {
                 console.error('Sync error:', error);
-                updateConnectionStatus(`Sync failed: ${error.message}`, false);
+                updateConnectionStatus(`❌ Sync failed: ${error.message}`, false);
             });
         }
         
         function loadCharacters() {
-            return fetch(`${serverUrl}/api/characters`)
-                .then(response => response.json())
-                .then(data => {
-                    characters = [];
-                    
-                    if (Array.isArray(data)) {
-                        data.forEach((char, index) => {
-                            const charId = char.id || `char_${index}`;
-                            processCharacter(charId, char);
-                        });
-                    } else if (typeof data === 'object') {
-                        Object.keys(data).forEach(charId => {
-                            const char = data[charId];
-                            processCharacter(charId, char);
-                        });
-                    }
-                    
-                    console.log(`Loaded ${characters.length} characters`);
-                });
+            const timeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Characters API timeout')), 5000)
+            );
+            
+            return Promise.race([
+                fetch(`${serverUrl}/api/characters`)
+                    .then(response => response.json())
+                    .then(data => {
+                        characters = [];
+                        
+                        if (Array.isArray(data)) {
+                            data.forEach((char, index) => {
+                                const charId = char.id || `char_${index}`;
+                                processCharacter(charId, char);
+                            });
+                        } else if (typeof data === 'object') {
+                            Object.keys(data).forEach(charId => {
+                                const char = data[charId];
+                                processCharacter(charId, char);
+                            });
+                        }
+                        
+                        console.log(`Loaded ${characters.length} characters`);
+                    }),
+                timeout
+            ]);
         }
         
         function processCharacter(charId, char) {
@@ -1182,29 +1197,43 @@
         }
         
         function loadStoryData() {
-            return fetch(`${serverUrl}/api/story`)
-                .then(response => response.json())
-                .then(data => {
-                    storyData = data;
-                    console.log(`Loaded ${data.total_files || 0} story files`);
-                })
-                .catch(error => {
-                    console.log('Story API failed:', error);
-                    storyData = null;
-                });
+            const timeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Story API timeout')), 5000)
+            );
+            
+            return Promise.race([
+                fetch(`${serverUrl}/api/story`)
+                    .then(response => response.json())
+                    .then(data => {
+                        storyData = data;
+                        console.log(`Loaded ${data.total_files || 0} story files`);
+                    })
+                    .catch(error => {
+                        console.log('Story API failed:', error);
+                        storyData = null;
+                    }),
+                timeout
+            ]);
         }
         
         function loadMapData() {
-            return fetch(`${serverUrl}/api/map`)
-                .then(response => response.json())
-                .then(data => {
-                    mapData = data;
-                    console.log(`Loaded map with ${data.map_pins ? data.map_pins.length : 0} pins`);
-                })
-                .catch(error => {
-                    console.log('Map API failed:', error);
-                    mapData = null;
-                });
+            const timeout = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Map API timeout')), 5000)
+            );
+            
+            return Promise.race([
+                fetch(`${serverUrl}/api/map`)
+                    .then(response => response.json())
+                    .then(data => {
+                        mapData = data;
+                        console.log(`Loaded map with ${data.map_pins ? data.map_pins.length : 0} pins`);
+                    })
+                    .catch(error => {
+                        console.log('Map API failed:', error);
+                        mapData = null;
+                    }),
+                timeout
+            ]);
         }
         
         function renderCharacters() {
