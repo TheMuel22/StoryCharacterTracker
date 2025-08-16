@@ -1065,21 +1065,52 @@
                 setTimeout(() => reject(new Error('Sync timeout after 10 seconds')), 10000)
             );
             
+            // Load data with individual error handling
+            const loadPromises = [
+                loadCharacters().catch(error => {
+                    console.error('Characters load failed:', error);
+                    return null; // Continue even if this fails
+                }),
+                loadStoryData().catch(error => {
+                    console.error('Story load failed:', error);
+                    storyData = null;
+                    return null; // Continue even if this fails
+                }),
+                loadMapData().catch(error => {
+                    console.error('Map load failed:', error);
+                    mapData = null;
+                    return null; // Continue even if this fails
+                })
+            ];
+            
             Promise.race([
-                Promise.all([
-                    loadCharacters(),
-                    loadStoryData(),
-                    loadMapData()
-                ]),
+                Promise.allSettled(loadPromises), // Use allSettled to handle individual failures
                 syncTimeout
-            ]).then(() => {
+            ]).then((results) => {
+                // Process results even if some failed
                 renderCharacters();
                 renderChapters();
                 renderMap();
-                updateConnectionStatus(`✅ Sync complete! ${characters.length} characters loaded`, true);
+                
+                // Count successful loads
+                let successCount = 0;
+                if (characters && characters.length > 0) successCount++;
+                if (storyData) successCount++;
+                if (mapData) successCount++;
+                
+                updateConnectionStatus(`✅ Sync complete! ${successCount}/3 sections loaded successfully`, true);
             }).catch(error => {
                 console.error('Sync error:', error);
                 updateConnectionStatus(`❌ Sync failed: ${error.message}`, false);
+                
+                // Still try to render what we have
+                try {
+                    renderCharacters();
+                    renderChapters();
+                    renderMap();
+                } catch (renderError) {
+                    console.error('Render error:', renderError);
+                }
             });
         }
         
@@ -2012,8 +2043,36 @@
             characterModal.style.display = 'none';
         }
         
+        function enableAllTabs() {
+            // Force enable all tabs even if sync is incomplete
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(tab => {
+                tab.style.pointerEvents = 'auto';
+                tab.style.opacity = '1';
+                tab.disabled = false;
+            });
+            console.log('All tabs enabled manually');
+            
+            // Also try to render what we can
+            try {
+                renderCharacters();
+                renderChapters();
+                renderMap();
+            } catch (error) {
+                console.error('Error rendering after enabling tabs:', error);
+            }
+        }
+        
         // Auto-focus password field
         passwordInput.focus();
+        
+        // Add keyboard shortcut to force enable tabs (Ctrl+Shift+T)
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.shiftKey && event.key === 'T') {
+                enableAllTabs();
+                updateConnectionStatus('✅ Tabs force-enabled (manual override)', true);
+            }
+        });
     </script>
 </body>
 </html>
