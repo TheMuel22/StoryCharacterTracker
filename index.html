@@ -969,8 +969,24 @@
                 mapContent += '<div style="margin: 15px 0; color: #666;">No map pins available</div>';
             }
             
-            if (storyData) {
-                mapContent += '<div style="margin: 15px 0;"><strong>📚 Story Data Available</strong></div>';
+            if (storyData && storyData.files && storyData.files.length > 0) {
+                const fileCount = storyData.files.length;
+                const wordCount = storyData.total_words || 0;
+                mapContent += `<div style="margin: 15px 0;"><strong>📚 Story: ${fileCount} chapters, ${wordCount.toLocaleString()} words</strong></div>`;
+                mapContent += '<div class="map-pins" style="max-height: 200px; overflow-y: auto;">';
+                
+                storyData.files.slice(0, 10).forEach(file => {
+                    const words = file.full_content ? file.full_content.split(' ').length : 0;
+                    mapContent += `<div class="data-item" style="margin: 5px 0; font-size: 12px;">📖 ${file.title} (${words} words)</div>`;
+                });
+                
+                if (storyData.files.length > 10) {
+                    mapContent += `<div style="margin: 5px 0; color: #666; font-style: italic;">... and ${storyData.files.length - 10} more chapters</div>`;
+                }
+                
+                mapContent += '</div>';
+            } else if (storyData) {
+                mapContent += '<div style="margin: 15px 0;"><strong>📚 Story Data Available (no files found)</strong></div>';
             } else {
                 mapContent += '<div style="margin: 15px 0; color: #666;">📚 No story data available</div>';
             }
