@@ -519,46 +519,101 @@ function updateConnectionStatus(message) {
 function loadAllData() {
     if (!connected || !serverUrl) return;
     
+    updateConnectionStatus('Loading data...');
+    
     Promise.all([
         loadCharacters(),
         loadMapData(),
-        loadPlaces()
+        loadPlaces(),
+        loadStoryChapters()
     ]).then(() => {
         renderCharacters();
         renderPlaces();
         renderMap();
+        renderChapters(); // Render any story chapters we loaded
+        updateConnectionStatus(`Connected - ${characters.length} characters loaded`);
     }).catch(error => {
         console.error('Error loading data:', error);
-        alert('Error loading data from Character Tracker');
+        updateConnectionStatus('Connected - some data failed to load');
+        alert('Error loading some data from Character Tracker');
     });
+}
+
+function loadStoryChapters() {
+    // Try to load story data from Character Tracker if available
+    return fetch(`${serverUrl}/api/story`)
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            throw new Error('No story data available');
+        })
+        .then(data => {
+            // If we get story data, convert it to our chapter format
+            if (data && data.chapters) {
+                data.chapters.forEach(chapterData => {
+                    const existingChapter = chapters.find(c => c.title === chapterData.title);
+                    if (!existingChapter) {
+                        chapters.push({
+                            id: Date.now() + Math.random(),
+                            title: chapterData.title || 'Untitled Chapter',
+                            content: chapterData.content || '',
+                            created: chapterData.created || new Date().toISOString(),
+                            modified: chapterData.modified || new Date().toISOString(),
+                            wordCount: countWords(chapterData.content || '')
+                        });
+                    }
+                });
+                saveChapters(); // Save to local storage
+            }
+        })
+        .catch(() => {
+            // Story loading failed, that's okay - not all Character Trackers will have story data
+            console.log('No story data available from Character Tracker');
+        });
 }
 
 function loadCharacters() {
     return fetch(`${serverUrl}/api/characters`)
         .then(response => response.json())
         .then(data => {
-            characters = Object.values(data).map(char => ({
-                id: Object.keys(data).find(key => data[key] === char),
-                name: `${char.basic_info?.first_name || ''} ${char.basic_info?.last_name || ''}`.trim(),
-                firstName: char.basic_info?.first_name || '',
-                lastName: char.basic_info?.last_name || '',
-                title: char.basic_info?.title || '',
-                age: char.basic_info?.age || '',
-                gender: char.physical?.gender || '',
-                location: char.basic_info?.home || '',
-                currentLocation: char.basic_info?.current_location || '',
-                region: char.basic_info?.region || '',
-                photo: char.photo_path || '',
-                personality: char.personality || '',
-                skills: char.skills || '',
-                backstory: char.backstory || '',
-                goals: char.goals || '',
-                fears: char.fears || '',
-                notes: char.notes || '',
-                physical: char.physical || {},
-                deceased: char.deceased || false,
-                basicInfo: char.basic_info || {}
-            }));
+            characters = [];
+            // Convert the character data properly
+            Object.keys(data).forEach(charId => {
+                const char = data[charId];
+                const firstName = char.basic_info?.first_name || '';
+                const lastName = char.basic_info?.last_name || '';
+                const fullName = `${firstName} ${lastName}`.trim();
+                
+                if (fullName) { // Only add characters with names
+                    characters.push({
+                        id: charId,
+                        name: fullName,
+                        firstName: firstName,
+                        lastName: lastName,
+                        title: char.basic_info?.title || '',
+                        age: char.basic_info?.age || '',
+                        gender: char.physical?.gender || '',
+                        location: char.basic_info?.home || '',
+                        currentLocation: char.basic_info?.current_location || '',
+                        region: char.basic_info?.region || '',
+                        photo: char.photo_path || '',
+                        personality: char.personality || '',
+                        skills: char.skills || '',
+                        backstory: char.backstory || '',
+                        goals: char.goals || '',
+                        fears: char.fears || '',
+                        notes: char.notes || '',
+                        physical: char.physical || {},
+                        deceased: char.deceased || false,
+                        basicInfo: char.basic_info || {},
+                        created: char.created_date || '',
+                        modified: char.last_modified || ''
+                    });
+                }
+            });
+            
+            console.log(`Loaded ${characters.length} characters:`, characters);
         });
 }
 
@@ -566,13 +621,27 @@ function loadMapData() {
     return fetch(`${serverUrl}/api/map`)
         .then(response => response.json())
         .then(data => {
+            console.log('Map data received:', data);
             mapData = data;
-            if (data.image) {
+            
+            // Load map image if available
+            if (data.map_image_path) {
                 mapImage = new Image();
-                mapImage.src = `${serverUrl}/api/map/image`;
+                mapImage.crossOrigin = 'anonymous';
+                mapImage.onload = function() {
+                    console.log('Map image loaded successfully');
+                    renderMap();
+                };
+                mapImage.onerror = function() {
+                    console.log('Map image failed to load, using placeholder');
+                    mapImage = null;
+                };
+                // Try to load the image from the server
+                mapImage.src = `${serverUrl}/api/map/image?t=${Date.now()}`;
             }
         })
-        .catch(() => {
+        .catch(error => {
+            console.log('Map data not available:', error);
             mapData = null;
             mapImage = null;
         });
@@ -582,9 +651,44 @@ function loadPlaces() {
     return fetch(`${serverUrl}/api/places`)
         .then(response => response.json())
         .then(data => {
-            places = data || [];
+            console.log('Places data received:', data);
+            places = [];
+            
+            // Extract places from the data structure
+            if (Array.isArray(data)) {
+                places = data;
+            } else if (data && typeof data === 'object') {
+                // If it's an object, try to extract place names from various sources
+                const placeSet = new Set();
+                
+                // Add places from characters' locations
+                characters.forEach(char => {
+                    if (char.location) placeSet.add(char.location);
+                    if (char.currentLocation) placeSet.add(char.currentLocation);
+                    if (char.region) placeSet.add(char.region);
+                });
+                
+                // Add places from map pins if available
+                if (mapData && mapData.map_pins) {
+                    mapData.map_pins.forEach(pin => {
+                        if (pin.type === 'Place' && pin.label) {
+                            placeSet.add(pin.label);
+                        }
+                    });
+                }
+                
+                // Convert to place objects
+                places = Array.from(placeSet).map(placeName => ({
+                    name: placeName,
+                    type: 'Location',
+                    description: `Location: ${placeName}`
+                }));
+            }
+            
+            console.log(`Loaded ${places.length} places:`, places);
         })
-        .catch(() => {
+        .catch(error => {
+            console.log('Places data not available:', error);
             places = [];
         });
 }
@@ -605,8 +709,9 @@ function renderCharacters() {
     const searchTerm = elements.characterSearch.value.toLowerCase();
     const filteredCharacters = characters.filter(char => 
         char.name.toLowerCase().includes(searchTerm) ||
-        char.title.toLowerCase().includes(searchTerm) ||
-        char.location.toLowerCase().includes(searchTerm)
+        (char.title && char.title.toLowerCase().includes(searchTerm)) ||
+        (char.location && char.location.toLowerCase().includes(searchTerm)) ||
+        (char.currentLocation && char.currentLocation.toLowerCase().includes(searchTerm))
     );
     
     if (filteredCharacters.length === 0) {
@@ -619,9 +724,26 @@ function renderCharacters() {
         const characterElement = document.createElement('div');
         characterElement.className = 'character-item';
         
-        const avatar = character.photo 
-            ? `<img src="${serverUrl}/api/character/photo/${character.id}" alt="${character.name}">`
-            : character.name.split(' ').map(n => n[0]).join('').toUpperCase();
+        // Create avatar - either photo or initials
+        let avatar = '';
+        if (character.photo && character.photo.trim()) {
+            // Try to load photo from server
+            avatar = `<img src="${serverUrl}/api/character/photo/${character.id}" alt="${character.name}" onerror="this.style.display='none'; this.nextSibling.style.display='block';">
+                     <div class="character-initials" style="display: none;">${character.name.split(' ').map(n => n[0]).join('').toUpperCase()}</div>`;
+        } else {
+            // Use initials
+            avatar = `<div class="character-initials">${character.name.split(' ').map(n => n[0]).join('').toUpperCase()}</div>`;
+        }
+        
+        // Build character details
+        const details = [];
+        if (character.title) details.push(`<span class="character-tag title">${character.title}</span>`);
+        if (character.age) details.push(`<span class="character-tag age">${character.age} years</span>`);
+        if (character.gender) details.push(`<span class="character-tag gender">${character.gender}</span>`);
+        if (character.currentLocation) details.push(`<span class="character-tag location">📍 ${character.currentLocation}</span>`);
+        else if (character.location) details.push(`<span class="character-tag location">🏠 ${character.location}</span>`);
+        if (character.region) details.push(`<span class="character-tag region">🗺️ ${character.region}</span>`);
+        if (character.deceased) details.push('<span class="character-tag deceased">💀 Deceased</span>');
         
         characterElement.innerHTML = `
             <div class="character-avatar">
@@ -630,10 +752,10 @@ function renderCharacters() {
             <div class="character-info">
                 <div class="character-name">${character.name}</div>
                 <div class="character-details">
-                    ${character.title ? `<span class="character-tag">${character.title}</span>` : ''}
-                    ${character.location ? `<span class="character-tag">📍 ${character.location}</span>` : ''}
-                    ${character.age ? `<span class="character-tag">${character.age} years</span>` : ''}
-                    ${character.deceased ? '<span class="character-tag" style="background: #fca5a5;">Deceased</span>' : ''}
+                    ${details.join(' ')}
+                </div>
+                <div class="character-preview">
+                    ${character.personality ? character.personality.substring(0, 100) + '...' : 'No description available'}
                 </div>
             </div>
         `;
@@ -671,42 +793,87 @@ function renderPlaces() {
 }
 
 function renderMap() {
-    if (!mapData || !mapImage) {
+    const canvas = elements.mapCanvas;
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas size
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    
+    if (!mapData) {
         document.querySelector('.map-placeholder').style.display = 'flex';
         return;
     }
     
     document.querySelector('.map-placeholder').style.display = 'none';
-    const canvas = elements.mapCanvas;
-    const ctx = canvas.getContext('2d');
     
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-    
-    // Draw map image
+    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(mapImage, 0, 0, canvas.width, canvas.height);
     
-    // Draw pins
-    if (mapData.pins) {
-        mapData.pins.forEach(pin => {
-            const x = (pin.x / mapData.originalWidth) * canvas.width;
-            const y = (pin.y / mapData.originalHeight) * canvas.height;
+    // Draw map image if available
+    if (mapImage && mapImage.complete) {
+        ctx.drawImage(mapImage, 0, 0, canvas.width, canvas.height);
+    } else {
+        // Draw placeholder background
+        ctx.fillStyle = '#f3f4f6';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#6b7280';
+        ctx.font = '16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('Map Loading...', canvas.width / 2, canvas.height / 2);
+    }
+    
+    // Draw pins if available
+    if (mapData.map_pins && mapData.map_pins.length > 0) {
+        mapData.map_pins.forEach(pin => {
+            // Calculate pin position (scale to canvas size)
+            const x = (pin.map_x || pin.x || 0) * canvas.width / (mapData.original_width || 1000);
+            const y = (pin.map_y || pin.y || 0) * canvas.height / (mapData.original_height || 1000);
             
-            // Draw pin
-            ctx.fillStyle = pin.type === 'Place' ? '#ef4444' : '#3b82f6';
-            ctx.beginPath();
+            // Draw pin based on type
+            ctx.save();
             if (pin.type === 'Place') {
-                ctx.rect(x - 4, y - 4, 8, 8);
+                // Draw red square for places
+                ctx.fillStyle = '#ef4444';
+                ctx.fillRect(x - 5, y - 5, 10, 10);
             } else {
-                ctx.arc(x, y, 4, 0, 2 * Math.PI);
+                // Draw blue circle for characters
+                ctx.fillStyle = '#3b82f6';
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                ctx.fill();
             }
-            ctx.fill();
             
             // Draw label
+            if (pin.label) {
+                ctx.fillStyle = '#000000';
+                ctx.font = '12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(pin.label, x, y - 10);
+            }
+            ctx.restore();
+        });
+    }
+    
+    // Draw character pins if available
+    if (mapData.character_pins && Object.keys(mapData.character_pins).length > 0) {
+        Object.entries(mapData.character_pins).forEach(([charName, pinData]) => {
+            const x = (pinData.map_x || pinData.x || 0) * canvas.width / (mapData.original_width || 1000);
+            const y = (pinData.map_y || pinData.y || 0) * canvas.height / (mapData.original_height || 1000);
+            
+            // Draw character pin (circle)
+            ctx.save();
+            ctx.fillStyle = '#8b5cf6';
+            ctx.beginPath();
+            ctx.arc(x, y, 6, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            // Draw character name
             ctx.fillStyle = '#000000';
-            ctx.font = '10px Arial';
-            ctx.fillText(pin.label, x + 8, y - 8);
+            ctx.font = '11px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(charName, x, y - 12);
+            ctx.restore();
         });
     }
 }

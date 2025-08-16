@@ -456,7 +456,7 @@ body {
 /* Enhanced Character Items */
 .character-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 0.75rem;
     padding: 1rem;
     border-radius: 8px;
@@ -475,27 +475,99 @@ body {
 }
 
 .character-avatar {
-    width: 40px;
-    height: 40px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: var(--bg-tertiary);
+    background: var(--primary-color);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.25rem;
+    font-size: 1rem;
+    color: white;
+    font-weight: 600;
     flex-shrink: 0;
+    overflow: hidden;
 }
 
 .character-avatar img {
     width: 100%;
     height: 100%;
-    border-radius: 50%;
     object-fit: cover;
+}
+
+.character-initials {
+    color: white;
+    font-weight: 600;
+    font-size: 0.875rem;
 }
 
 .character-info {
     flex: 1;
     min-width: 0;
+}
+
+.character-name {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.character-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    margin-bottom: 0.5rem;
+}
+
+.character-tag {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.character-tag.title {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.character-tag.age {
+    background: #f3e8ff;
+    color: #7c3aed;
+}
+
+.character-tag.gender {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.character-tag.location {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.character-tag.region {
+    background: #f0f9ff;
+    color: #0284c7;
+}
+
+.character-tag.deceased {
+    background: #fef2f2;
+    color: #dc2626;
+    font-weight: 600;
+}
+
+.character-preview {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+    max-height: 2.8em;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .character-name {
