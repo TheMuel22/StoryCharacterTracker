@@ -9,9 +9,19 @@ let currentCharacter = null;
 let darkMode = localStorage.getItem('darkMode') === 'true';
 let connected = false;
 let serverUrl = '';
+let isLoggedIn = false;
+
+// Password for app access
+const APP_PASSWORD = 'Linsey123';
 
 // DOM Elements
 const elements = {
+    loginScreen: document.getElementById('loginScreen'),
+    mainApp: document.getElementById('mainApp'),
+    passwordInput: document.getElementById('passwordInput'),
+    loginBtn: document.getElementById('loginBtn'),
+    loginError: document.getElementById('loginError'),
+    logoutBtn: document.getElementById('logoutBtn'),
     chaptersList: document.getElementById('chaptersList'),
     chapterContent: document.getElementById('chapterContent'),
     currentChapterTitle: document.getElementById('currentChapterTitle'),
@@ -39,10 +49,80 @@ const elements = {
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', function() {
+    setupLoginListeners();
+    checkLoginStatus();
+});
+
+function setupLoginListeners() {
+    // Login functionality
+    elements.loginBtn.addEventListener('click', attemptLogin);
+    elements.passwordInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            attemptLogin();
+        }
+    });
+    
+    // Logout functionality
+    if (elements.logoutBtn) {
+        elements.logoutBtn.addEventListener('click', logout);
+    }
+}
+
+function checkLoginStatus() {
+    // Check if user was previously logged in (optional - remove if you want login every time)
+    const wasLoggedIn = localStorage.getItem('storyWriterLoggedIn') === 'true';
+    
+    if (wasLoggedIn) {
+        showMainApp();
+    } else {
+        showLoginScreen();
+    }
+}
+
+function attemptLogin() {
+    const password = elements.passwordInput.value;
+    
+    if (password === APP_PASSWORD) {
+        isLoggedIn = true;
+        localStorage.setItem('storyWriterLoggedIn', 'true');
+        showMainApp();
+    } else {
+        showLoginError('Incorrect password. Please try again.');
+        elements.passwordInput.value = '';
+        elements.passwordInput.focus();
+    }
+}
+
+function logout() {
+    isLoggedIn = false;
+    localStorage.removeItem('storyWriterLoggedIn');
+    elements.passwordInput.value = '';
+    showLoginScreen();
+}
+
+function showLoginScreen() {
+    elements.loginScreen.style.display = 'flex';
+    elements.mainApp.style.display = 'none';
+    elements.passwordInput.focus();
+    hideLoginError();
+}
+
+function showMainApp() {
+    elements.loginScreen.style.display = 'none';
+    elements.mainApp.style.display = 'block';
     initializeApp();
     loadChapters();
     setupEventListeners();
-});
+}
+
+function showLoginError(message) {
+    elements.loginError.textContent = message;
+    elements.loginError.classList.add('show');
+}
+
+function hideLoginError() {
+    elements.loginError.classList.remove('show');
+}
 
 function initializeApp() {
     // Set dark mode
@@ -69,6 +149,21 @@ function setupEventListeners() {
     elements.refreshDataBtn.addEventListener('click', refreshAllData);
     elements.toggleViewBtn.addEventListener('click', toggleMapView);
     elements.darkModeToggle.addEventListener('click', toggleDarkMode);
+    
+    // New sync functionality
+    const syncBtn = document.getElementById('syncTracker');
+    const testLocalBtn = document.getElementById('testLocal');
+    const testNetworkBtn = document.getElementById('testNetwork');
+    
+    if (syncBtn) {
+        syncBtn.addEventListener('click', syncWithCharacterTracker);
+    }
+    if (testLocalBtn) {
+        testLocalBtn.addEventListener('click', () => testConnection('http://localhost:8000'));
+    }
+    if (testNetworkBtn) {
+        testNetworkBtn.addEventListener('click', () => testConnection('http://192.168.4.111:8000'));
+    }
     
     // Search
     elements.characterSearch.addEventListener('input', debounce(searchCharacters, 300));
@@ -319,31 +414,91 @@ function insertSynonym(word) {
 
 // Character Tracker Integration
 function connectCharacterTracker() {
-    const url = prompt('Enter Character Tracker server URL:', 'http://192.168.4.145:8080');
+    const url = prompt('Enter Character Tracker server URL:', 'http://192.168.4.111:8000');
     if (!url) return;
     
+    testConnection(url);
+}
+
+function syncWithCharacterTracker() {
+    const serverUrlInput = document.getElementById('serverUrl');
+    const url = serverUrlInput.value.trim();
+    
+    if (!url) {
+        alert('Please enter a server URL');
+        return;
+    }
+    
+    testConnection(url);
+}
+
+function testConnection(url) {
     serverUrl = url;
     updateConnectionStatus('Connecting...');
     
-    // Test connection first
-    fetch(`${serverUrl}/api/status`)
+    // Test connection with /api/characters endpoint (which exists in our API)
+    fetch(`${serverUrl}/api/characters`)
         .then(response => {
             if (response.ok) {
                 return response.json();
             }
-            throw new Error('Server not responding');
+            throw new Error(`Server responded with status: ${response.status}`);
         })
         .then(data => {
             connected = true;
-            updateConnectionStatus('Connected');
+            updateConnectionStatus(`Connected - ${data.length} characters found`);
             loadAllData();
+            
+            // Update URL input field
+            const serverUrlInput = document.getElementById('serverUrl');
+            if (serverUrlInput) {
+                serverUrlInput.value = url;
+            }
+            
+            // Show success message
+            showMessage(`✅ Successfully connected to Character Tracker!\nFound ${data.length} characters and syncing data...`);
         })
         .catch(error => {
             connected = false;
             updateConnectionStatus('Connection failed');
             console.error('Connection error:', error);
-            alert('Could not connect to Character Tracker. Make sure the server is running and the URL is correct.');
+            
+            let errorMessage = 'Could not connect to Character Tracker.\n\n';
+            errorMessage += `URL tried: ${url}\n\n`;
+            errorMessage += 'Please check:\n';
+            errorMessage += '1. Character Tracker application is running\n';
+            errorMessage += '2. API server shows green status in app\n';
+            errorMessage += '3. URL is correct (usually http://192.168.4.111:8000)\n';
+            errorMessage += '4. No firewall blocking the connection\n\n';
+            errorMessage += `Error: ${error.message}`;
+            
+            alert(errorMessage);
         });
+}
+
+function showMessage(message) {
+    // Simple message display - you can enhance this with a proper notification system
+    const messageDiv = document.createElement('div');
+    messageDiv.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #4CAF50;
+        color: white;
+        padding: 15px;
+        border-radius: 5px;
+        z-index: 10000;
+        max-width: 300px;
+        white-space: pre-line;
+    `;
+    messageDiv.textContent = message;
+    document.body.appendChild(messageDiv);
+    
+    setTimeout(() => {
+        if (messageDiv.parentNode) {
+            messageDiv.parentNode.removeChild(messageDiv);
+        }
+    }, 5000);
 }
 
 function updateConnectionStatus(message) {

@@ -8,12 +8,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="app-container">
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <h1>📖 Story Writer</h1>
+            <p>Enter password to access your writing app</p>
+            <div class="login-form">
+                <input type="password" id="passwordInput" placeholder="Enter password..." />
+                <button id="loginBtn">Login</button>
+                <div id="loginError" class="login-error"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App (hidden initially) -->
+    <div id="mainApp" class="app-container" style="display: none;">
         <header class="app-header">
             <h1>📖 Story Writer</h1>
             <div class="header-controls">
                 <button id="darkModeToggle" class="icon-btn" title="Toggle Dark Mode">🌙</button>
                 <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
+                <button id="logoutBtn" class="icon-btn" title="Logout">🚪</button>
             </div>
         </header>
 
@@ -58,8 +73,16 @@
                 
                 <!-- Connection Status -->
                 <div id="connectionStatus" class="connection-status">
-                    <span class="status-indicator offline"></span>
-                    <span class="status-text">Not connected</span>
+                    <div class="status-info">
+                        <span class="status-indicator offline"></span>
+                        <span class="status-text">Not connected</span>
+                    </div>
+                    <div class="connection-controls">
+                        <input type="text" id="serverUrl" placeholder="http://192.168.4.111:8000" value="http://192.168.4.111:8000">
+                        <button id="syncTracker" class="btn-primary">🔄 Sync with Character Tracker</button>
+                        <button id="testLocal" class="btn-secondary">🏠 Test Local</button>
+                        <button id="testNetwork" class="btn-secondary">🌐 Test Network</button>
+                    </div>
                 </div>
                 
                 <!-- Tabbed Interface -->
