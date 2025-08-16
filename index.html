@@ -343,12 +343,84 @@
         /* Map Tab */
         .map-container {
             width: 100%;
-            height: 300px;
+            height: 500px;
             border: 2px solid #e1e5e9;
             border-radius: 12px;
             overflow: hidden;
             position: relative;
             background: #f8f9fa;
+            cursor: pointer;
+        }
+        
+        .map-container:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+        }
+        
+        .map-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .map-popup-content {
+            background: white;
+            border-radius: 10px;
+            max-width: 95vw;
+            max-height: 95vh;
+            overflow: auto;
+            position: relative;
+            padding: 20px;
+        }
+        
+        .map-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 35px;
+            height: 35px;
+            cursor: pointer;
+            font-size: 18px;
+            z-index: 10;
+        }
+        
+        .map-close-btn:hover {
+            background: rgba(0,0,0,0.9);
+        }
+        
+        .pin-popup {
+            position: absolute;
+            background: white;
+            border: 2px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 100;
+            min-width: 150px;
+            max-width: 250px;
+            pointer-events: auto;
+        }
+        
+        .pin-popup h4 {
+            margin: 0 0 5px 0;
+            color: #333;
+        }
+        
+        .pin-popup p {
+            margin: 0;
+            color: #666;
+            font-size: 12px;
         }
         
         .map-image {
@@ -1222,70 +1294,52 @@
                 return;
             }
             
-            // Create larger interactive map display
+            // Create enhanced interactive map display
             const mapImageUrl = `${serverUrl}/api/map/image`;
             mapContainer.innerHTML = `
-                <div style="position: relative; width: 100%; height: 600px; border: 2px solid #ddd; border-radius: 8px; overflow: hidden; background: #f8f9fa;">
+                <div style="position: relative; width: 100%; height: 100%; background: #f8f9fa;" onclick="openMapPopup()">
                     <img id="mapImage" src="${mapImageUrl}" alt="Story Map" 
-                         style="width: 100%; height: 100%; object-fit: contain; cursor: grab;" 
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';"
+                         style="width: 100%; height: 100%; object-fit: contain; display: block;" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                          draggable="false">
-                    <div id="mapErrorMessage" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; padding: 20px; background: rgba(248,249,250,0.9); border-radius: 8px; color: #666;">
+                    <div id="mapErrorMessage" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+                                                  align-items: center; justify-content: center; text-align: center; 
+                                                  background: rgba(248,249,250,0.9); color: #666;">
                         📍 Map image unavailable<br>
-                        <small>But ${mapData.map_pins ? mapData.map_pins.length : 0} pins loaded</small>
+                        <small>But ${mapData.map_pins ? mapData.map_pins.length : 0} pins loaded</small><br>
+                        <small style="color: #999;">Click to view pin details</small>
                     </div>
                     <div id="mapPinsOverlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
                         <!-- Map pins will be positioned here -->
                     </div>
-                </div>
-                <div style="margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <strong>📍 ${mapData.map_pins.length} Interactive Map Pins</strong>
-                        <button onclick="toggleMapPins()" id="togglePinsBtn" style="padding: 5px 10px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">Hide Pins</button>
-                    </div>
-                    <div id="pinsList" style="max-height: 200px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px;">
-                        ${mapData.map_pins.map((pin, index) => 
-                            `<div style="padding: 8px; background: white; border-radius: 4px; border-left: 4px solid ${pin.type === 'Character' ? '#e74c3c' : '#27ae60'}; cursor: pointer;" 
-                                  onclick="focusOnPin(${index})" title="Click to focus on map">
-                                <strong>${pin.type === 'Character' ? '👤' : '📍'} ${pin.label}</strong>
-                                <div style="font-size: 11px; color: #666;">${pin.type} • Position: ${Math.round(pin.x || 0)}, ${Math.round(pin.y || 0)}</div>
-                            </div>`
-                        ).join('')}
+                    <div style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; 
+                                padding: 5px 10px; border-radius: 15px; font-size: 12px; pointer-events: none;">
+                        📍 ${mapData.map_pins.length} pins • Click to expand
                     </div>
                 </div>
             `;
             
             // Position the pins on the map after image loads
             const mapImage = document.getElementById('mapImage');
-            mapImage.onload = function() {
+            if (mapImage.complete) {
                 positionMapPins();
-            };
+            } else {
+                mapImage.onload = function() {
+                    positionMapPins();
+                };
+            }
             
-            // Enable map dragging/panning
-            let isDragging = false;
-            let dragStart = {x: 0, y: 0};
-            let mapPosition = {x: 0, y: 0};
-            
-            mapImage.addEventListener('mousedown', (e) => {
-                isDragging = true;
-                dragStart.x = e.clientX - mapPosition.x;
-                dragStart.y = e.clientY - mapPosition.y;
-                mapImage.style.cursor = 'grabbing';
-            });
-            
-            document.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-                e.preventDefault();
-                mapPosition.x = e.clientX - dragStart.x;
-                mapPosition.y = e.clientY - dragStart.y;
-                // Limit dragging bounds if needed
-                mapImage.style.transform = `translate(${mapPosition.x}px, ${mapPosition.y}px)`;
-            });
-            
-            document.addEventListener('mouseup', () => {
-                isDragging = false;
-                mapImage.style.cursor = 'grab';
-            });
+            // Add map popup HTML if not exists
+            if (!document.getElementById('mapPopup')) {
+                document.body.innerHTML += `
+                    <div id="mapPopup" class="map-popup">
+                        <div class="map-popup-content">
+                            <button class="map-close-btn" onclick="closeMapPopup()">×</button>
+                            <div id="mapPopupBody"></div>
+                        </div>
+                    </div>
+                `;
+            }
         }
         
         function positionMapPins() {
@@ -1293,53 +1347,97 @@
             const mapImage = document.getElementById('mapImage');
             if (!overlay || !mapImage || !mapData.map_pins) return;
             
-            const imageRect = mapImage.getBoundingClientRect();
-            const overlayRect = overlay.getBoundingClientRect();
-            
             overlay.innerHTML = mapData.map_pins.map((pin, index) => {
-                // Convert pin coordinates (assuming 0-1000 range) to percentage of image
-                const left = ((pin.x || 0) / 1000) * 100;
-                const top = ((pin.y || 0) / 1000) * 100;
+                // Convert pin coordinates to percentage of image size
+                // Assuming coordinates are in range 0-1000, convert to 0-100%
+                const left = Math.min(Math.max(((pin.x || 0) / 1000) * 100, 0), 100);
+                const top = Math.min(Math.max(((pin.y || 0) / 1000) * 100, 0), 100);
+                
+                const pinColor = pin.type === 'Character' ? '#e74c3c' : '#27ae60';
+                const pinIcon = pin.type === 'Character' ? '👤' : '📍';
                 
                 return `
                     <div style="position: absolute; left: ${left}%; top: ${top}%; transform: translate(-50%, -50%); 
                                 pointer-events: auto; cursor: pointer; z-index: 10;" 
-                         onclick="showPinPopup(${index})" id="pin_${index}">
-                        <div style="background: ${pin.type === 'Character' ? '#e74c3c' : '#27ae60'}; 
-                                    color: white; padding: 4px 8px; border-radius: 20px; 
-                                    font-size: 12px; font-weight: bold; min-width: 20px; text-align: center;
-                                    box-shadow: 0 2px 8px rgba(0,0,0,0.3); border: 2px solid white;">
-                            ${pin.type === 'Character' ? '👤' : '📍'}
+                         onclick="event.stopPropagation(); showPinPopup(${index}, event)" id="pin_${index}"
+                         title="${pin.label}">
+                        <div style="background: ${pinColor}; color: white; padding: 6px 10px; border-radius: 20px; 
+                                    font-size: 14px; font-weight: bold; min-width: 24px; text-align: center;
+                                    box-shadow: 0 3px 10px rgba(0,0,0,0.4); border: 3px solid white;
+                                    transition: transform 0.2s ease;">
+                            ${pinIcon}
                         </div>
-                        <div style="background: rgba(0,0,0,0.8); color: white; padding: 2px 6px; 
-                                    border-radius: 4px; font-size: 11px; margin-top: 2px; 
-                                    white-space: nowrap; transform: translateX(-50%); left: 50%; position: relative;">
+                        <div style="background: rgba(0,0,0,0.8); color: white; padding: 3px 8px; 
+                                    border-radius: 4px; font-size: 11px; margin-top: 5px; 
+                                    white-space: nowrap; transform: translateX(-50%); left: 50%; 
+                                    position: relative; text-align: center; max-width: 120px; overflow: hidden;">
                             ${pin.label}
                         </div>
                     </div>
                 `;
             }).join('');
-        }
-        
-        function toggleMapPins() {
-            const overlay = document.getElementById('mapPinsOverlay');
-            const btn = document.getElementById('togglePinsBtn');
-            if (!overlay || !btn) return;
             
-            if (overlay.style.display === 'none') {
-                overlay.style.display = 'block';
-                btn.textContent = 'Hide Pins';
-            } else {
-                overlay.style.display = 'none';
-                btn.textContent = 'Show Pins';
-            }
+            // Add hover effects
+            mapData.map_pins.forEach((pin, index) => {
+                const pinElement = document.getElementById(`pin_${index}`);
+                if (pinElement) {
+                    pinElement.addEventListener('mouseenter', () => {
+                        pinElement.style.transform = 'translate(-50%, -50%) scale(1.1)';
+                        pinElement.style.zIndex = '15';
+                    });
+                    pinElement.addEventListener('mouseleave', () => {
+                        pinElement.style.transform = 'translate(-50%, -50%) scale(1)';
+                        pinElement.style.zIndex = '10';
+                    });
+                }
+            });
         }
         
-        function showPinPopup(pinIndex) {
+        let currentPinPopup = null;
+        
+        function showPinPopup(pinIndex, event) {
             const pin = mapData.map_pins[pinIndex];
             if (!pin) return;
             
-            alert(`📍 ${pin.label}\n\nType: ${pin.type}\nPosition: ${Math.round(pin.x || 0)}, ${Math.round(pin.y || 0)}\n\nClick anywhere else to close this popup.`);
+            // Close existing popup
+            if (currentPinPopup) {
+                currentPinPopup.remove();
+            }
+            
+            // Create popup
+            const popup = document.createElement('div');
+            popup.className = 'pin-popup';
+            popup.innerHTML = `
+                <h4>${pin.type === 'Character' ? '�' : '�📍'} ${pin.label}</h4>
+                <p><strong>Type:</strong> ${pin.type}</p>
+                <p><strong>Position:</strong> ${Math.round(pin.x || 0)}, ${Math.round(pin.y || 0)}</p>
+                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+                    <button onclick="closePinPopup()" style="background: #667eea; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px;">Close</button>
+                    <button onclick="focusOnPin(${pinIndex})" style="background: #27ae60; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 11px; margin-left: 5px;">Center</button>
+                </div>
+            `;
+            
+            // Position popup near the click
+            const rect = mapContainer.getBoundingClientRect();
+            popup.style.left = Math.min(event.clientX - rect.left + 10, rect.width - 200) + 'px';
+            popup.style.top = Math.min(event.clientY - rect.top - 10, rect.height - 100) + 'px';
+            
+            mapContainer.appendChild(popup);
+            currentPinPopup = popup;
+            
+            // Auto-close after 5 seconds
+            setTimeout(() => {
+                if (currentPinPopup === popup) {
+                    closePinPopup();
+                }
+            }, 5000);
+        }
+        
+        function closePinPopup() {
+            if (currentPinPopup) {
+                currentPinPopup.remove();
+                currentPinPopup = null;
+            }
         }
         
         function focusOnPin(pinIndex) {
@@ -1351,7 +1449,63 @@
                     pinElement.style.transform = 'translate(-50%, -50%) scale(1)';
                 }, 1000);
             }
+            closePinPopup();
         }
+        
+        function openMapPopup() {
+            const popup = document.getElementById('mapPopup');
+            const popupBody = document.getElementById('mapPopupBody');
+            
+            if (!popup || !popupBody) return;
+            
+            // Create full-size map view
+            const mapImageUrl = `${serverUrl}/api/map/image`;
+            popupBody.innerHTML = `
+                <h3 style="margin-top: 0;">📍 Interactive Story Map</h3>
+                <div style="position: relative; max-height: 80vh; overflow: auto; border: 2px solid #ddd; border-radius: 8px;">
+                    <img src="${mapImageUrl}" alt="Full Story Map" 
+                         style="width: 100%; height: auto; display: block;" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div style="display: none; padding: 40px; text-align: center; color: #666;">
+                        📍 Map image unavailable<br>
+                        <small>${mapData.map_pins ? mapData.map_pins.length : 0} pins available in list below</small>
+                    </div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <h4>📍 All Map Locations (${mapData.map_pins.length})</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; max-height: 300px; overflow-y: auto;">
+                        ${mapData.map_pins.map((pin, index) => `
+                            <div style="padding: 12px; background: ${pin.type === 'Character' ? '#fdf2f2' : '#f0fdf4'}; 
+                                        border-radius: 8px; border-left: 4px solid ${pin.type === 'Character' ? '#e74c3c' : '#27ae60'};">
+                                <strong>${pin.type === 'Character' ? '👤' : '📍'} ${pin.label}</strong>
+                                <div style="font-size: 12px; color: #666; margin-top: 4px;">
+                                    ${pin.type} • Position: ${Math.round(pin.x || 0)}, ${Math.round(pin.y || 0)}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            popup.style.display = 'flex';
+        }
+        
+        function closeMapPopup() {
+            const popup = document.getElementById('mapPopup');
+            if (popup) {
+                popup.style.display = 'none';
+            }
+        }
+        
+        // Close popup when clicking outside
+        document.addEventListener('click', (e) => {
+            if (e.target.id === 'mapPopup') {
+                closeMapPopup();
+            }
+            if (!e.target.closest('.pin-popup') && !e.target.closest('[id^="pin_"]')) {
+                closePinPopup();
+            }
+        });
         
         function switchTab(tabName) {
             // Update tab buttons
