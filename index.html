@@ -77,153 +77,175 @@
             font-weight: 500;
         }
         
+        /* Main App Styles */
         .app-container {
             display: none;
-            padding: 20px;
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            min-height: 100vh;
+            width: 100vw;
+            height: 100vh;
+            background: #f5f7fa;
+            overflow: hidden;
         }
         
+        /* Header */
         .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 0;
-            border-bottom: 2px solid #f0f0f0;
-            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
         }
         
         .header h1 {
-            color: #333;
-            font-size: 1.8rem;
+            font-size: 1.5rem;
+            font-weight: 600;
         }
         
-        .logout-btn {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        
-        .content-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-        
-        .section {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .section h3 {
-            color: #333;
-            margin-bottom: 15px;
-            font-size: 1.2rem;
-        }
-        
-        .connection-section {
-            grid-column: span 3;
-            background: #fff3cd;
-            border: 2px solid #ffeaa7;
-        }
-        
-        .connection-controls {
+        .header-controls {
             display: flex;
             gap: 15px;
             align-items: center;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.1);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ff6b6b;
+        }
+        
+        .status-dot.connected {
+            background: #51cf66;
+        }
+        
+        .logout-btn, .sync-btn {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .logout-btn:hover, .sync-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        /* Layout */
+        .main-layout {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 350px;
+            background: white;
+            border-right: 1px solid #e1e5e9;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .sidebar-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e1e5e9;
+        }
+        
+        .sidebar-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        
+        /* Characters Tab */
+        .character-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
             margin-bottom: 20px;
         }
         
-        .connection-controls input {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e1e5e9;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        
-        .test-btn, .sync-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-        }
-        
-        .sync-btn {
-            background: #007bff;
-        }
-        
-        .status {
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-weight: 500;
-        }
-        
-        .status.connected {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .status.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f1b0b7;
-        }
-        
-        .data-list {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid #e1e5e9;
-            border-radius: 8px;
-            padding: 10px;
-        }
-        
-        .data-item {
-            padding: 12px;
-            margin: 5px 0;
-            background: white;
-            border-radius: 8px;
-            border-left: 4px solid #007bff;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        .data-item:hover {
-            background: #e3f2fd;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
-        
-        .data-item.deceased {
-            border-left-color: #6c757d;
+        .character-card {
             background: #f8f9fa;
-            opacity: 0.8;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
         }
         
-        .data-item.deceased:hover {
-            background: #e9ecef;
+        .character-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        
+        .character-card.deceased {
+            opacity: 0.7;
+            background: #f1f3f4;
+        }
+        
+        .character-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 10px auto;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            overflow: hidden;
+        }
+        
+        .character-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         
         .character-name {
-            font-weight: bold;
+            font-weight: 600;
             color: #333;
-            margin-bottom: 4px;
+            margin-bottom: 5px;
+            font-size: 14px;
         }
         
         .character-details {
@@ -232,14 +254,221 @@
             line-height: 1.3;
         }
         
-        .empty-state {
-            text-align: center;
-            color: #6c757d;
-            padding: 40px 20px;
-            font-style: italic;
+        /* Chapters Tab */
+        .chapters-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
         }
         
-        /* Modal styles */
+        .chapter-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 4px solid #667eea;
+        }
+        
+        .chapter-item:hover {
+            background: #e3f2fd;
+            transform: translateX(5px);
+        }
+        
+        .chapter-item.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .chapter-info {
+            flex: 1;
+        }
+        
+        .chapter-title {
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 14px;
+        }
+        
+        .chapter-meta {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+        
+        .chapter-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .chapter-btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .chapter-btn.edit {
+            background: #28a745;
+            color: white;
+        }
+        
+        .chapter-btn.delete {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .add-chapter-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: transform 0.2s;
+        }
+        
+        .add-chapter-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Map Tab */
+        .map-container {
+            width: 100%;
+            height: 300px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            background: #f8f9fa;
+        }
+        
+        .map-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            cursor: grab;
+        }
+        
+        .map-pin {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+            border: 2px solid white;
+            cursor: pointer;
+            transition: transform 0.2s;
+            z-index: 10;
+        }
+        
+        .map-pin:hover {
+            transform: scale(1.2);
+        }
+        
+        .map-pin.character {
+            background: #28a745;
+        }
+        
+        .map-pin.place {
+            background: #667eea;
+        }
+        
+        /* Main Editor */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            overflow: hidden;
+        }
+        
+        .editor-toolbar {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e1e5e9;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .editor-title {
+            flex: 1;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            min-width: 200px;
+        }
+        
+        .editor-stats {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .editor-tools {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .tool-btn {
+            padding: 8px 12px;
+            border: 1px solid #e1e5e9;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .tool-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .editor-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .story-editor {
+            width: 100%;
+            height: 100%;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            line-height: 1.6;
+            resize: none;
+            background: transparent;
+            font-family: 'Georgia', serif;
+        }
+        
+        .story-editor:focus {
+            outline: none;
+        }
+        
+        /* Character Modal */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -256,12 +485,11 @@
         .modal-content {
             background: white;
             border-radius: 15px;
-            max-width: 700px;
-            max-height: 90vh;
+            max-width: 600px;
+            max-height: 80vh;
             overflow-y: auto;
-            padding: 0;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             margin: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
         }
         
         .modal-header {
@@ -275,31 +503,30 @@
         }
         
         .modal-body {
-            padding: 30px;
+            padding: 20px;
         }
         
         .character-photo {
-            width: 150px;
-            height: 150px;
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             object-fit: cover;
             border: 4px solid #fff;
             margin: 0 auto 20px auto;
             display: block;
-            background: #f0f0f0;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
         
-        .character-initials {
-            width: 150px;
-            height: 150px;
+        .character-initials-large {
+            width: 120px;
+            height: 120px;
             border-radius: 50%;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 48px;
+            font-size: 36px;
             font-weight: bold;
             margin: 0 auto 20px auto;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
@@ -309,14 +536,14 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         
         .info-item {
             background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
-            border-left: 4px solid #007bff;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
         }
         
         .info-item.deceased {
@@ -325,49 +552,25 @@
         }
         
         .info-label {
-            font-size: 12px;
+            font-size: 11px;
             color: #6c757d;
             text-transform: uppercase;
             font-weight: 600;
-            margin-bottom: 8px;
+            margin-bottom: 5px;
             letter-spacing: 0.5px;
         }
         
         .info-value {
-            font-size: 16px;
+            font-size: 14px;
             color: #333;
             font-weight: 500;
-        }
-        
-        .info-section {
-            margin-bottom: 25px;
-        }
-        
-        .info-section h4 {
-            color: #333;
-            margin-bottom: 12px;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .info-text {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            border-left: 4px solid #28a745;
-            font-size: 15px;
-            line-height: 1.6;
-            color: #333;
-            white-space: pre-wrap;
         }
         
         .close-btn {
             background: none;
             border: none;
             color: white;
-            font-size: 28px;
+            font-size: 24px;
             cursor: pointer;
             padding: 5px 10px;
             border-radius: 5px;
@@ -378,132 +581,206 @@
             background: rgba(255,255,255,0.2);
         }
         
-        .map-container {
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .map-status {
-            font-style: italic;
-            color: #666;
-            margin-bottom: 15px;
-        }
-        
-        .map-pins {
-            text-align: left;
-        }
-        
-        .debug-section {
-            margin-top: 30px;
-            background: #f8f9fa;
-            border: 2px solid #6c757d;
-        }
-        
-        .debug-btn {
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-bottom: 15px;
-            font-weight: 500;
-        }
-        
-        .debug-info {
-            display: none;
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 10px;
-            font-family: 'Courier New', monospace;
-            font-size: 13px;
-            max-height: 400px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            border: 1px solid #ddd;
-        }
-
+        /* Responsive Design */
         @media (max-width: 768px) {
-            .content-grid {
-                grid-template-columns: 1fr;
+            .sidebar {
+                width: 300px;
             }
             
-            .connection-section {
-                grid-column: span 1;
+            .character-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
             }
             
-            .connection-controls {
+            .character-avatar {
+                width: 60px;
+                height: 60px;
+                font-size: 20px;
+            }
+            
+            .editor-toolbar {
                 flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .editor-stats {
+                justify-content: space-between;
             }
             
             .info-grid {
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* Loading States */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #666;
+            font-style: italic;
+        }
+        
+        .loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e1e5e9;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Server Connection */
+        .connection-panel {
+            background: white;
+            border: 2px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .connection-panel.connected {
+            border-color: #55a3ff;
+            background: #e3f2fd;
+        }
+        
+        .connection-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        
+        .connection-btn {
+            width: 100%;
+            padding: 10px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .connection-status-text {
+            font-size: 12px;
+            text-align: center;
+            padding: 5px;
+        }
     </style>
 </head>
 <body>
     <!-- Login Screen -->
     <div id="loginScreen" class="login-screen">
-        <h1>🏰 Story Character Tracker</h1>
-        <p>Password required to access your story data</p>
+        <h1>🏰 Story Writer's Studio</h1>
+        <p>Your complete story writing companion</p>
         <div class="login-form">
             <input type="password" id="passwordInput" placeholder="Enter password..." />
-            <button id="loginBtn">🔐 Login</button>
+            <button id="loginBtn">🔐 Enter Studio</button>
             <div id="loginError" class="login-error"></div>
         </div>
     </div>
 
     <!-- Main App -->
     <div id="mainApp" class="app-container">
+        <!-- Header -->
         <div class="header">
-            <h1>🏰 Story Character Tracker</h1>
-            <button id="logoutBtn" class="logout-btn">🚪 Logout</button>
-        </div>
-
-        <!-- Connection Section -->
-        <div class="connection-section section">
-            <h3>📡 Character Tracker Connection</h3>
-            <div class="connection-controls">
-                <input type="text" id="serverUrl" value="http://localhost:8000" placeholder="Server URL">
-                <button id="testConnection" class="test-btn">🔗 Test Connection</button>
-                <button id="syncData" class="sync-btn">🔄 Sync Data</button>
+            <h1>🏰 Story Writer's Studio</h1>
+            <div class="header-controls">
+                <div class="connection-status">
+                    <div id="statusDot" class="status-dot"></div>
+                    <span id="statusText">Connecting...</span>
+                </div>
+                <button id="syncBtn" class="sync-btn">🔄 Sync</button>
+                <button id="logoutBtn" class="logout-btn">🚪 Exit</button>
             </div>
-            <div id="connectionStatus" class="status">Not connected</div>
         </div>
 
-        <!-- Data Sections -->
-        <div class="content-grid">
-            <!-- Characters -->
-            <div class="section">
-                <h3>👥 Characters (<span id="characterCount">0</span>)</h3>
-                <div id="charactersList" class="data-list">
-                    <div class="empty-state">No characters loaded</div>
+        <div class="main-layout">
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Connection Panel -->
+                <div id="connectionPanel" class="connection-panel">
+                    <input type="text" id="serverUrl" class="connection-input" 
+                           value="http://localhost:8000" placeholder="Server URL">
+                    <button id="connectBtn" class="connection-btn">🔗 Connect</button>
+                    <div id="connectionStatus" class="connection-status-text">Not connected</div>
+                </div>
+
+                <!-- Sidebar Tabs -->
+                <div class="sidebar-tabs">
+                    <button class="sidebar-tab active" data-tab="characters">👥 Characters</button>
+                    <button class="sidebar-tab" data-tab="chapters">📚 Chapters</button>
+                    <button class="sidebar-tab" data-tab="map">🗺️ Map</button>
+                </div>
+
+                <!-- Sidebar Content -->
+                <div class="sidebar-content">
+                    <!-- Characters Tab -->
+                    <div id="charactersTab" class="tab-content active">
+                        <div id="charactersGrid" class="character-grid">
+                            <div class="loading">Loading characters...</div>
+                        </div>
+                    </div>
+
+                    <!-- Chapters Tab -->
+                    <div id="chaptersTab" class="tab-content" style="display: none;">
+                        <div id="chaptersList" class="chapters-list">
+                            <div class="loading">Loading chapters...</div>
+                        </div>
+                        <button id="addChapterBtn" class="add-chapter-btn">📝 Add New Chapter</button>
+                    </div>
+
+                    <!-- Map Tab -->
+                    <div id="mapTab" class="tab-content" style="display: none;">
+                        <div id="mapContainer" class="map-container">
+                            <div class="loading">Loading map...</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Places -->
-            <div class="section">
-                <h3>🏛️ Places (<span id="placesCount">0</span>)</h3>
-                <div id="placesList" class="data-list">
-                    <div class="empty-state">No places loaded</div>
+            <!-- Main Editor Area -->
+            <div class="editor-area">
+                <div class="editor-toolbar">
+                    <div id="editorTitle" class="editor-title">Select a chapter to start writing</div>
+                    <div class="editor-stats">
+                        <div class="stat-item">
+                            <span>📊</span>
+                            <span id="wordCount">0 words</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>📝</span>
+                            <span id="charCount">0 characters</span>
+                        </div>
+                        <div class="stat-item">
+                            <span>⏱️</span>
+                            <span id="readTime">0 min read</span>
+                        </div>
+                    </div>
+                    <div class="editor-tools">
+                        <button class="tool-btn" id="spellCheckBtn" title="Spell Check">📖 Spell Check</button>
+                        <button class="tool-btn" id="thesaurusBtn" title="Thesaurus">📚 Thesaurus</button>
+                        <button class="tool-btn" id="saveBtn" title="Save Chapter">💾 Save</button>
+                    </div>
+                </div>
+                
+                <div class="editor-content">
+                    <textarea id="storyEditor" class="story-editor" 
+                              placeholder="Select a chapter from the sidebar to start writing your story..."></textarea>
                 </div>
             </div>
-
-            <!-- Map -->
-            <div class="section">
-                <h3>🗺️ Map & Story</h3>
-                <div id="mapContainer" class="data-list">
-                    <div class="empty-state">No map data loaded</div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Debug Section -->
-        <div class="section debug-section">
-            <h3>🔧 Debug Info</h3>
-            <button onclick="showDebugInfo()" class="debug-btn">Show Debug Info</button>
-            <div id="debugInfo" class="debug-info"></div>
         </div>
     </div>
 
@@ -530,8 +807,10 @@
         let serverUrl = '';
         let characters = [];
         let places = [];
-        let mapData = null;
         let storyData = null;
+        let mapData = null;
+        let currentChapter = null;
+        let currentContent = '';
         
         // DOM Elements
         const loginScreen = document.getElementById('loginScreen');
@@ -541,14 +820,24 @@
         const loginError = document.getElementById('loginError');
         const logoutBtn = document.getElementById('logoutBtn');
         const serverUrlInput = document.getElementById('serverUrl');
-        const testConnectionBtn = document.getElementById('testConnection');
-        const syncDataBtn = document.getElementById('syncData');
+        const connectBtn = document.getElementById('connectBtn');
+        const syncBtn = document.getElementById('syncBtn');
         const connectionStatus = document.getElementById('connectionStatus');
-        const charactersList = document.getElementById('charactersList');
-        const placesList = document.getElementById('placesList');
+        const connectionPanel = document.getElementById('connectionPanel');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const charactersGrid = document.getElementById('charactersGrid');
+        const chaptersList = document.getElementById('chaptersList');
+        const addChapterBtn = document.getElementById('addChapterBtn');
         const mapContainer = document.getElementById('mapContainer');
-        const characterCount = document.getElementById('characterCount');
-        const placesCount = document.getElementById('placesCount');
+        const editorTitle = document.getElementById('editorTitle');
+        const storyEditor = document.getElementById('storyEditor');
+        const wordCount = document.getElementById('wordCount');
+        const charCount = document.getElementById('charCount');
+        const readTime = document.getElementById('readTime');
+        const spellCheckBtn = document.getElementById('spellCheckBtn');
+        const thesaurusBtn = document.getElementById('thesaurusBtn');
+        const saveBtn = document.getElementById('saveBtn');
         const characterModal = document.getElementById('characterModal');
         
         // Initialize
@@ -558,20 +847,45 @@
         });
         
         function setupEventListeners() {
+            // Login
             loginBtn.addEventListener('click', handleLogin);
             passwordInput.addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') handleLogin();
             });
             logoutBtn.addEventListener('click', handleLogout);
-            testConnectionBtn.addEventListener('click', testConnection);
-            syncDataBtn.addEventListener('click', syncAllData);
             
-            // Close modal when clicking outside
+            // Connection
+            connectBtn.addEventListener('click', testConnection);
+            syncBtn.addEventListener('click', syncAllData);
+            
+            // Sidebar tabs
+            document.querySelectorAll('.sidebar-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    switchTab(this.getAttribute('data-tab'));
+                });
+            });
+            
+            // Chapter management
+            addChapterBtn.addEventListener('click', addNewChapter);
+            
+            // Editor
+            storyEditor.addEventListener('input', updateEditorStats);
+            storyEditor.addEventListener('input', autoSave);
+            
+            // Tools
+            spellCheckBtn.addEventListener('click', runSpellCheck);
+            thesaurusBtn.addEventListener('click', openThesaurus);
+            saveBtn.addEventListener('click', saveCurrentChapter);
+            
+            // Modal
             characterModal.addEventListener('click', function(e) {
                 if (e.target === characterModal) {
                     closeCharacterModal();
                 }
             });
+            
+            // Auto-connect on load
+            setTimeout(testConnection, 500);
         }
         
         function checkLoginStatus() {
@@ -613,20 +927,16 @@
         function showMainApp() {
             loginScreen.style.display = 'none';
             mainApp.style.display = 'block';
-            // Auto-test connection on app load
-            setTimeout(() => {
-                testConnection();
-            }, 500);
         }
         
         function testConnection() {
             serverUrl = serverUrlInput.value.trim();
             if (!serverUrl) {
-                updateConnectionStatus('❌ Please enter server URL', false);
+                updateConnectionStatus('Please enter server URL', false);
                 return;
             }
             
-            updateConnectionStatus('🔄 Testing connection...', false);
+            updateConnectionStatus('Testing connection...', false);
             
             fetch(`${serverUrl}/api/characters`)
                 .then(response => {
@@ -637,41 +947,51 @@
                 })
                 .then(data => {
                     connected = true;
-                    const charCount = Object.keys(data).length;
-                    updateConnectionStatus(`✅ Connected! Found ${charCount} characters`, true);
+                    const charCount = Array.isArray(data) ? data.length : Object.keys(data).length;
+                    updateConnectionStatus(`Connected! Found ${charCount} characters`, true);
+                    syncAllData();
                 })
                 .catch(error => {
                     connected = false;
-                    updateConnectionStatus(`❌ Connection failed: ${error.message}`, false);
-                    console.error('Connection error:', error);
+                    updateConnectionStatus(`Connection failed: ${error.message}`, false);
                 });
         }
         
         function updateConnectionStatus(message, isConnected) {
             connectionStatus.textContent = message;
-            connectionStatus.className = `status ${isConnected ? 'connected' : 'error'}`;
+            statusText.textContent = isConnected ? 'Connected' : 'Disconnected';
+            
+            if (isConnected) {
+                connectionPanel.classList.add('connected');
+                statusDot.classList.add('connected');
+            } else {
+                connectionPanel.classList.remove('connected');
+                statusDot.classList.remove('connected');
+            }
+            
             connected = isConnected;
         }
         
         function syncAllData() {
             if (!connected) {
-                alert('❌ Not connected to Character Tracker. Test connection first.');
+                alert('❌ Not connected to server. Test connection first.');
                 return;
             }
             
-            updateConnectionStatus('🔄 Syncing all data...', true);
+            updateConnectionStatus('Syncing all data...', true);
             
             Promise.all([
                 loadCharacters(),
-                loadPlaces(),
-                loadMapData(),
-                loadStoryData()
+                loadStoryData(),
+                loadMapData()
             ]).then(() => {
-                renderAllData();
-                updateConnectionStatus(`✅ Sync complete! ${characters.length} characters, ${places.length} places`, true);
+                renderCharacters();
+                renderChapters();
+                renderMap();
+                updateConnectionStatus(`Sync complete! ${characters.length} characters loaded`, true);
             }).catch(error => {
                 console.error('Sync error:', error);
-                updateConnectionStatus(`❌ Sync failed: ${error.message}`, false);
+                updateConnectionStatus(`Sync failed: ${error.message}`, false);
             });
         }
         
@@ -679,32 +999,25 @@
             return fetch(`${serverUrl}/api/characters`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Raw character data received:', data);
                     characters = [];
                     
-                    // Handle different data formats
                     if (Array.isArray(data)) {
-                        // If it's an array, process each item
                         data.forEach((char, index) => {
                             const charId = char.id || `char_${index}`;
                             processCharacter(charId, char);
                         });
                     } else if (typeof data === 'object') {
-                        // If it's an object, process each key-value pair
                         Object.keys(data).forEach(charId => {
                             const char = data[charId];
                             processCharacter(charId, char);
                         });
                     }
                     
-                    console.log(`Processed ${characters.length} characters:`, characters);
+                    console.log(`Loaded ${characters.length} characters`);
                 });
         }
         
         function processCharacter(charId, char) {
-            console.log(`Processing character ${charId}:`, char);
-            
-            // Try different possible data structures
             let firstName = '';
             let lastName = '';
             let title = '';
@@ -715,7 +1028,6 @@
             let region = '';
             let photoPath = '';
             
-            // Additional character data
             let personality = '';
             let skills = '';
             let backstory = '';
@@ -724,7 +1036,6 @@
             let notes = '';
             let physical = {};
             
-            // Check for basic_info structure
             if (char.basic_info) {
                 firstName = char.basic_info.first_name || '';
                 lastName = char.basic_info.last_name || '';
@@ -735,7 +1046,6 @@
                 deceased = char.deceased || false;
                 photoPath = char.photo_path || '';
                 
-                // Additional data
                 personality = char.personality || '';
                 skills = char.skills || '';
                 backstory = char.backstory || '';
@@ -743,9 +1053,8 @@
                 fears = char.fears || '';
                 notes = char.notes || '';
                 physical = char.physical || {};
-                gender = physical.gender || '';
+                gender = char.basic_info.gender || physical.gender || '';
             } else {
-                // Check for direct properties
                 firstName = char.first_name || char.firstName || '';
                 lastName = char.last_name || char.lastName || '';
                 title = char.title || '';
@@ -756,7 +1065,6 @@
                 deceased = char.deceased || false;
                 photoPath = char.photo_path || char.photoPath || '';
                 
-                // Additional data
                 personality = char.personality || '';
                 skills = char.skills || '';
                 backstory = char.backstory || '';
@@ -788,70 +1096,21 @@
                     fears: fears,
                     notes: notes,
                     physical: physical,
-                    rawData: char // Keep raw data for debugging
+                    rawData: char
                 });
-                console.log(`Added character: ${fullName}`);
-            } else {
-                console.log(`Skipped character with no name:`, char);
             }
         }
         
-        function loadPlaces() {
-            return fetch(`${serverUrl}/api/places`)
+        function loadStoryData() {
+            return fetch(`${serverUrl}/api/story`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Raw places data received:', data);
-                    places = [];
-                    
-                    // Check if we got direct places data
-                    if (Array.isArray(data)) {
-                        places = data.map(place => ({
-                            name: place.name || place,
-                            type: place.type || 'Location'
-                        }));
-                    } else if (data && typeof data === 'object') {
-                        // Try to extract from object structure
-                        if (data.locations) {
-                            places = data.locations.map(name => ({ name, type: 'Location' }));
-                        } else if (data.places) {
-                            places = data.places.map(place => ({
-                                name: place.name || place,
-                                type: place.type || 'Location'
-                            }));
-                        }
-                    }
-                    
-                    // If no places found, extract from characters' locations
-                    if (places.length === 0) {
-                        console.log('No direct places data, extracting from characters...');
-                        const placeSet = new Set();
-                        characters.forEach(char => {
-                            if (char.location) placeSet.add(char.location);
-                            if (char.region) placeSet.add(char.region);
-                        });
-                        
-                        // Convert to place objects
-                        places = Array.from(placeSet).map(placeName => ({
-                            name: placeName,
-                            type: 'Location'
-                        }));
-                    }
-                    
-                    console.log(`Processed ${places.length} places:`, places);
+                    storyData = data;
+                    console.log(`Loaded ${data.total_files || 0} story files`);
                 })
                 .catch(error => {
-                    console.log('Places API failed, extracting from characters:', error);
-                    places = [];
-                    const placeSet = new Set();
-                    characters.forEach(char => {
-                        if (char.location) placeSet.add(char.location);
-                        if (char.region) placeSet.add(char.region);
-                    });
-                    places = Array.from(placeSet).map(placeName => ({
-                        name: placeName,
-                        type: 'Location'
-                    }));
-                    console.log(`Extracted ${places.length} places from characters:`, places);
+                    console.log('Story API failed:', error);
+                    storyData = null;
                 });
         }
         
@@ -859,18 +1118,8 @@
             return fetch(`${serverUrl}/api/map`)
                 .then(response => response.json())
                 .then(data => {
-                    console.log('Raw map data received:', data);
                     mapData = data;
-                    
-                    // Check different possible structures
-                    if (data && data.map_pins) {
-                        console.log(`Found ${data.map_pins.length} map pins`);
-                    } else if (data && data.pins) {
-                        console.log(`Found ${data.pins.length} pins`);
-                        data.map_pins = data.pins; // Normalize structure
-                    } else {
-                        console.log('No pins found in map data');
-                    }
+                    console.log(`Loaded map with ${data.map_pins ? data.map_pins.length : 0} pins`);
                 })
                 .catch(error => {
                     console.log('Map API failed:', error);
@@ -878,120 +1127,183 @@
                 });
         }
         
-        function loadStoryData() {
-            return fetch(`${serverUrl}/api/story`)
-                .then(response => response.json())
-                .then(data => {
-                    console.log('Raw story data received:', data);
-                    storyData = data;
-                })
-                .catch(error => {
-                    console.log('Story API failed (this is normal if no story endpoint exists):', error);
-                    storyData = null;
-                });
-        }
-        
-        function renderAllData() {
-            renderCharacters();
-            renderPlaces();
-            renderMap();
-        }
-        
         function renderCharacters() {
-            characterCount.textContent = characters.length;
-            
             if (characters.length === 0) {
-                charactersList.innerHTML = '<div class="empty-state">No characters loaded</div>';
+                charactersGrid.innerHTML = '<div class="loading">No characters found</div>';
                 return;
             }
             
-            charactersList.innerHTML = characters.map(char => {
-                const statusIcon = char.deceased ? '💀' : '👤';
-                const titleText = char.title ? `${char.title}` : '';
-                const locationText = char.location ? `📍 ${char.location}` : '';
-                const ageText = char.age ? `🎂 ${char.age} years` : '';
-                const regionText = char.region ? `🗺️ ${char.region}` : '';
+            charactersGrid.innerHTML = characters.map(char => {
+                const initials = char.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                const statusIcon = char.deceased ? '💀' : '';
                 
                 return `
-                    <div class="data-item ${char.deceased ? 'deceased' : ''}" onclick="showCharacterModal('${char.id}')">
+                    <div class="character-card ${char.deceased ? 'deceased' : ''}" onclick="showCharacterModal('${char.id}')">
+                        <div class="character-avatar">
+                            ${char.photoPath ? 
+                                `<img src="${serverUrl}/api/character/photo/${char.id}" alt="${char.name}" onerror="this.style.display='none'; this.parentNode.textContent='${initials}';">` :
+                                initials
+                            }
+                        </div>
                         <div class="character-name">${statusIcon} ${char.name}</div>
                         <div class="character-details">
-                            ${titleText ? `<div>📜 ${titleText}</div>` : ''}
-                            ${ageText ? `<div>${ageText}</div>` : ''}
-                            ${locationText ? `<div>${locationText}</div>` : ''}
-                            ${regionText ? `<div>${regionText}</div>` : ''}
-                            ${char.deceased ? '<div style="color: #6c757d; font-weight: bold;">💀 Deceased</div>' : ''}
+                            ${char.title ? `${char.title}<br>` : ''}
+                            ${char.age ? `Age ${char.age}<br>` : ''}
+                            ${char.location ? `📍 ${char.location}` : ''}
                         </div>
                     </div>
                 `;
             }).join('');
         }
         
-        function renderPlaces() {
-            placesCount.textContent = places.length;
-            
-            if (places.length === 0) {
-                placesList.innerHTML = '<div class="empty-state">No places loaded</div>';
+        function renderChapters() {
+            if (!storyData || !storyData.files || storyData.files.length === 0) {
+                chaptersList.innerHTML = '<div class="loading">No chapters found</div>';
                 return;
             }
             
-            placesList.innerHTML = places.map(place => `
-                <div class="data-item">
-                    <div class="character-name">🏛️ ${place.name}</div>
-                    <div class="character-details">
-                        <div>📍 ${place.type}</div>
+            chaptersList.innerHTML = storyData.files.map(chapter => {
+                const words = chapter.full_content ? chapter.full_content.split(' ').length : 0;
+                const readTime = Math.ceil(words / 200); // Average reading speed
+                
+                return `
+                    <div class="chapter-item" onclick="loadChapter('${chapter.filename}')">
+                        <div class="chapter-info">
+                            <div class="chapter-title">${chapter.title}</div>
+                            <div class="chapter-meta">${words} words • ${readTime} min read</div>
+                        </div>
+                        <div class="chapter-actions">
+                            <button class="chapter-btn edit" onclick="event.stopPropagation(); editChapter('${chapter.filename}')">Edit</button>
+                            <button class="chapter-btn delete" onclick="event.stopPropagation(); deleteChapter('${chapter.filename}')">Delete</button>
+                        </div>
                     </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
         
         function renderMap() {
-            let mapContent = '';
-            
-            if (mapData && mapData.image) {
-                mapContent = '<div class="map-status">🗺️ Map image loaded</div>';
-            } else {
-                mapContent = '<div class="map-status">📍 No map image available</div>';
+            if (!mapData || !mapData.map_pins) {
+                mapContainer.innerHTML = '<div class="loading">No map data available</div>';
+                return;
             }
             
-            if (mapData && mapData.map_pins && mapData.map_pins.length > 0) {
-                const pinCount = mapData.map_pins.length;
-                mapContent += `<div style="margin: 15px 0;"><strong>📍 ${pinCount} Map Pins:</strong></div>`;
-                mapContent += '<div class="map-pins">';
-                
-                mapData.map_pins.forEach(pin => {
-                    const pinIcon = pin.type === 'Place' ? '🏛️' : '👤';
-                    mapContent += `<div class="data-item" style="margin: 5px 0;">${pinIcon} ${pin.label}</div>`;
-                });
-                
-                mapContent += '</div>';
-            } else {
-                mapContent += '<div style="margin: 15px 0; color: #666;">No map pins available</div>';
-            }
+            // For now, just show pin info - actual map image loading would require more API work
+            mapContainer.innerHTML = `
+                <div class="loading">Map with ${mapData.map_pins.length} pins loaded</div>
+                <div style="padding: 15px; font-size: 12px;">
+                    ${mapData.map_pins.slice(0, 5).map(pin => 
+                        `<div style="margin: 5px 0;">📍 ${pin.label} (${pin.type})</div>`
+                    ).join('')}
+                    ${mapData.map_pins.length > 5 ? `<div>... and ${mapData.map_pins.length - 5} more pins</div>` : ''}
+                </div>
+            `;
+        }
+        
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.sidebar-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
             
-            if (storyData && storyData.files && storyData.files.length > 0) {
-                const fileCount = storyData.files.length;
-                const wordCount = storyData.total_words || 0;
-                mapContent += `<div style="margin: 15px 0;"><strong>📚 Story: ${fileCount} chapters, ${wordCount.toLocaleString()} words</strong></div>`;
-                mapContent += '<div class="map-pins" style="max-height: 200px; overflow-y: auto;">';
-                
-                storyData.files.slice(0, 10).forEach(file => {
-                    const words = file.full_content ? file.full_content.split(' ').length : 0;
-                    mapContent += `<div class="data-item" style="margin: 5px 0; font-size: 12px;">📖 ${file.title} (${words} words)</div>`;
-                });
-                
-                if (storyData.files.length > 10) {
-                    mapContent += `<div style="margin: 5px 0; color: #666; font-style: italic;">... and ${storyData.files.length - 10} more chapters</div>`;
+            // Show/hide tab content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.style.display = 'none';
+            });
+            document.getElementById(`${tabName}Tab`).style.display = 'block';
+        }
+        
+        function loadChapter(filename) {
+            if (!storyData) return;
+            
+            const chapter = storyData.files.find(f => f.filename === filename);
+            if (!chapter) return;
+            
+            currentChapter = chapter;
+            currentContent = chapter.full_content;
+            
+            editorTitle.textContent = chapter.title;
+            storyEditor.value = currentContent;
+            storyEditor.disabled = false;
+            
+            // Update active chapter
+            document.querySelectorAll('.chapter-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.closest('.chapter-item').classList.add('active');
+            
+            updateEditorStats();
+        }
+        
+        function updateEditorStats() {
+            const text = storyEditor.value;
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            const characters = text.length;
+            const readingTime = Math.ceil(words / 200);
+            
+            wordCount.textContent = `${words} words`;
+            charCount.textContent = `${characters} characters`;
+            readTime.textContent = `${readingTime} min read`;
+        }
+        
+        function addNewChapter() {
+            const title = prompt('Enter chapter title:');
+            if (!title) return;
+            
+            // This would typically create a new file on the server
+            console.log('Creating new chapter:', title);
+            alert('New chapter creation will be implemented with server API');
+        }
+        
+        function editChapter(filename) {
+            console.log('Edit chapter:', filename);
+            // Load chapter for editing
+            loadChapter(filename);
+        }
+        
+        function deleteChapter(filename) {
+            if (confirm(`Are you sure you want to delete this chapter?`)) {
+                console.log('Delete chapter:', filename);
+                alert('Chapter deletion will be implemented with server API');
+            }
+        }
+        
+        function autoSave() {
+            // Auto-save after 2 seconds of no typing
+            clearTimeout(window.autoSaveTimer);
+            window.autoSaveTimer = setTimeout(() => {
+                if (currentChapter) {
+                    console.log('Auto-saving chapter...');
+                    // Implement auto-save to server
                 }
-                
-                mapContent += '</div>';
-            } else if (storyData) {
-                mapContent += '<div style="margin: 15px 0;"><strong>📚 Story Data Available (no files found)</strong></div>';
-            } else {
-                mapContent += '<div style="margin: 15px 0; color: #666;">📚 No story data available</div>';
+            }, 2000);
+        }
+        
+        function saveCurrentChapter() {
+            if (!currentChapter) {
+                alert('No chapter selected');
+                return;
             }
             
-            mapContainer.innerHTML = mapContent || '<div class="empty-state">No map data loaded</div>';
+            console.log('Saving chapter:', currentChapter.filename);
+            alert('Chapter saving will be implemented with server API');
+        }
+        
+        function runSpellCheck() {
+            // Basic spell check using browser API
+            const text = storyEditor.value;
+            console.log('Running spell check on', text.length, 'characters');
+            alert('Spell check feature will be enhanced with proper dictionary API');
+        }
+        
+        function openThesaurus() {
+            const selectedText = storyEditor.value.substring(storyEditor.selectionStart, storyEditor.selectionEnd);
+            if (selectedText) {
+                console.log('Looking up:', selectedText);
+                alert(`Thesaurus lookup for: "${selectedText}"\nThis will be implemented with a thesaurus API`);
+            } else {
+                alert('Please select a word to look up in the thesaurus');
+            }
         }
         
         function showCharacterModal(characterId) {
@@ -1000,16 +1312,14 @@
             
             document.getElementById('modalCharacterName').textContent = character.name;
             
-            // Build character photo/initials
             let photoHtml = '';
             if (character.photoPath) {
                 photoHtml = `<img src="${serverUrl}/api/character/photo/${character.id}" class="character-photo" alt="${character.name}" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">`;
-                photoHtml += `<div class="character-initials" style="display: none;">${character.name.split(' ').map(n => n[0]).join('').toUpperCase()}</div>`;
+                photoHtml += `<div class="character-initials-large" style="display: none;">${character.name.split(' ').map(n => n[0]).join('').toUpperCase()}</div>`;
             } else {
-                photoHtml = `<div class="character-initials">${character.name.split(' ').map(n => n[0]).join('').toUpperCase()}</div>`;
+                photoHtml = `<div class="character-initials-large">${character.name.split(' ').map(n => n[0]).join('').toUpperCase()}</div>`;
             }
             
-            // Build basic info grid
             const infoItems = [
                 { label: 'Full Name', value: character.name },
                 { label: 'Title', value: character.title || 'None' },
@@ -1027,62 +1337,29 @@
                 </div>
             `).join('');
             
-            // Build text sections
             const textSections = [
-                { title: '💭 Personality', content: character.personality, icon: '💭' },
-                { title: '⚔️ Skills', content: character.skills, icon: '⚔️' },
-                { title: '📖 Backstory', content: character.backstory, icon: '📖' },
-                { title: '🎯 Goals', content: character.goals, icon: '🎯' },
-                { title: '😨 Fears', content: character.fears, icon: '😨' },
-                { title: '📝 Notes', content: character.notes, icon: '📝' }
-            ];
+                { title: 'Personality', content: character.personality },
+                { title: 'Skills', content: character.skills },
+                { title: 'Backstory', content: character.backstory },
+                { title: 'Goals', content: character.goals },
+                { title: 'Fears', content: character.fears },
+                { title: 'Notes', content: character.notes }
+            ].filter(section => section.content && section.content.trim());
             
-            const textSectionsHtml = textSections.map(section => {
-                if (!section.content || section.content.trim() === '') return '';
-                return `
-                    <div class="info-section">
-                        <h4>${section.icon} ${section.title.replace(/.*\s/, '')}</h4>
-                        <div class="info-text">${section.content}</div>
+            const textSectionsHtml = textSections.map(section => `
+                <div style="margin: 15px 0;">
+                    <h4 style="color: #333; margin-bottom: 8px;">${section.title}</h4>
+                    <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #667eea; font-size: 14px; line-height: 1.5;">
+                        ${section.content}
                     </div>
-                `;
-            }).join('');
-            
-            // Physical description
-            let physicalHtml = '';
-            if (character.physical && Object.values(character.physical).some(val => val)) {
-                const physicalItems = [
-                    { label: 'Height', value: character.physical.height },
-                    { label: 'Weight', value: character.physical.weight },
-                    { label: 'Hair Color', value: character.physical.hair_color },
-                    { label: 'Eye Color', value: character.physical.eye_color },
-                    { label: 'Skin Tone', value: character.physical.skin_tone },
-                    { label: 'Build', value: character.physical.build },
-                    { label: 'Distinguishing Marks', value: character.physical.distinguishing_marks }
-                ].filter(item => item.value && item.value.trim() !== '');
-                
-                if (physicalItems.length > 0) {
-                    physicalHtml = `
-                        <div class="info-section">
-                            <h4>👤 Physical Description</h4>
-                            <div class="info-grid">
-                                ${physicalItems.map(item => `
-                                    <div class="info-item">
-                                        <div class="info-label">${item.label}</div>
-                                        <div class="info-value">${item.value}</div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                }
-            }
+                </div>
+            `).join('');
             
             document.getElementById('modalBody').innerHTML = `
                 ${photoHtml}
                 <div class="info-grid">
                     ${infoGridHtml}
                 </div>
-                ${physicalHtml}
                 ${textSectionsHtml}
             `;
             
@@ -1091,41 +1368,6 @@
         
         function closeCharacterModal() {
             characterModal.style.display = 'none';
-        }
-        
-        function showDebugInfo() {
-            const debugInfo = document.getElementById('debugInfo');
-            const info = `
-DEBUG INFORMATION
-================
-
-CONNECTION:
-- Server URL: ${serverUrl}
-- Connected: ${connected}
-
-CHARACTERS (${characters.length}):
-${characters.slice(0, 3).map(char => `- ${char.name} (${char.title || 'No title'}) - ${char.location || 'No location'} - ${char.deceased ? 'Deceased' : 'Alive'}`).join('\n')}
-${characters.length > 3 ? `... and ${characters.length - 3} more` : ''}
-
-RAW CHARACTER SAMPLE:
-${characters.length > 0 ? JSON.stringify(characters[0].rawData, null, 2) : 'No character data'}
-
-PLACES (${places.length}):
-${places.slice(0, 5).map(place => `- ${place.name} (${place.type})`).join('\n')}
-${places.length > 5 ? `... and ${places.length - 5} more` : ''}
-
-MAP DATA:
-${mapData ? JSON.stringify(mapData, null, 2) : 'No map data'}
-
-STORY DATA:
-${storyData ? JSON.stringify(storyData, null, 2) : 'No story data'}
-
-CONSOLE LOGS:
-Check browser console (F12) for more detailed logs during data loading.
-            `;
-            
-            debugInfo.textContent = info;
-            debugInfo.style.display = debugInfo.style.display === 'none' ? 'block' : 'none';
         }
         
         // Auto-focus password field
