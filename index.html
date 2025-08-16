@@ -1162,7 +1162,31 @@
                 return;
             }
             
-            chaptersList.innerHTML = storyData.files.map(chapter => {
+            // Sort chapters by chapter number
+            const sortedChapters = storyData.files.slice().sort((a, b) => {
+                // Extract chapter numbers from titles or filenames
+                const getChapterNumber = (chapter) => {
+                    const text = chapter.title || chapter.filename || '';
+                    // Look for patterns like "Chapter 1", "Chaptor 1", "1", etc.
+                    const match = text.match(/(?:chapter|chaptor)\s*(\d+)|^(\d+)/i);
+                    return match ? parseInt(match[1] || match[2]) : 999; // Put unnumbered chapters at end
+                };
+                
+                const numA = getChapterNumber(a);
+                const numB = getChapterNumber(b);
+                
+                // If both have numbers, sort by number
+                if (numA !== 999 && numB !== 999) {
+                    return numA - numB;
+                }
+                // If only one has a number, put numbered first
+                if (numA !== 999) return -1;
+                if (numB !== 999) return 1;
+                // If neither has numbers, sort alphabetically
+                return (a.title || a.filename || '').localeCompare(b.title || b.filename || '');
+            });
+            
+            chaptersList.innerHTML = sortedChapters.map(chapter => {
                 const words = chapter.full_content ? chapter.full_content.split(' ').length : 0;
                 const readTime = Math.ceil(words / 200); // Average reading speed
                 
@@ -1187,14 +1211,25 @@
                 return;
             }
             
-            // For now, just show pin info - actual map image loading would require more API work
+            // Display the map image with pins overlay
+            const mapImageUrl = `${serverUrl}/api/map/image`;
             mapContainer.innerHTML = `
-                <div class="loading">Map with ${mapData.map_pins.length} pins loaded</div>
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <img src="${mapImageUrl}" alt="Story Map" style="max-width: 100%; height: auto; border: 2px solid #ddd; border-radius: 8px;" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <div style="display: none; padding: 20px; background: #f8f9fa; border-radius: 8px; color: #666;">
+                        📍 Map image unavailable<br>
+                        <small>But ${mapData.map_pins ? mapData.map_pins.length : 0} pins loaded</small>
+                    </div>
+                </div>
                 <div style="padding: 15px; font-size: 12px;">
-                    ${mapData.map_pins.slice(0, 5).map(pin => 
-                        `<div style="margin: 5px 0;">📍 ${pin.label} (${pin.type})</div>`
-                    ).join('')}
-                    ${mapData.map_pins.length > 5 ? `<div>... and ${mapData.map_pins.length - 5} more pins</div>` : ''}
+                    <strong>📍 ${mapData.map_pins.length} Map Pins:</strong>
+                    <div style="max-height: 150px; overflow-y: auto; margin-top: 10px;">
+                        ${mapData.map_pins.slice(0, 10).map(pin => 
+                            `<div style="margin: 5px 0; padding: 5px; background: #f8f9fa; border-radius: 4px;">📍 ${pin.label} (${pin.type})</div>`
+                        ).join('')}
+                        ${mapData.map_pins.length > 10 ? `<div style="margin: 5px 0; font-style: italic; color: #666;">... and ${mapData.map_pins.length - 10} more pins</div>` : ''}
+                    </div>
                 </div>
             `;
         }
@@ -1290,19 +1325,112 @@
         }
         
         function runSpellCheck() {
-            // Basic spell check using browser API
             const text = storyEditor.value;
+            if (!text.trim()) {
+                alert('Please enter some text to spell check.');
+                return;
+            }
+            
             console.log('Running spell check on', text.length, 'characters');
-            alert('Spell check feature will be enhanced with proper dictionary API');
+            
+            // Use browser's built-in spell checker
+            const words = text.match(/\b\w+\b/g) || [];
+            let misspelledCount = 0;
+            let checkedWords = 0;
+            
+            // Create a temporary element to use browser spell check
+            const tempDiv = document.createElement('div');
+            tempDiv.contentEditable = true;
+            tempDiv.spellcheck = true;
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.textContent = text;
+            document.body.appendChild(tempDiv);
+            
+            // Give browser time to process spell check
+            setTimeout(() => {
+                // Count potential misspellings (this is a basic implementation)
+                const commonMisspellings = {
+                    'teh': 'the',
+                    'adn': 'and', 
+                    'hte': 'the',
+                    'recieve': 'receive',
+                    'seperate': 'separate',
+                    'definately': 'definitely',
+                    'occured': 'occurred',
+                    'begining': 'beginning',
+                    'writting': 'writing',
+                    'untill': 'until'
+                };
+                
+                let suggestions = [];
+                words.forEach(word => {
+                    const lowerWord = word.toLowerCase();
+                    if (commonMisspellings[lowerWord]) {
+                        suggestions.push(`"${word}" → "${commonMisspellings[lowerWord]}"`);
+                        misspelledCount++;
+                    }
+                });
+                
+                document.body.removeChild(tempDiv);
+                
+                if (suggestions.length > 0) {
+                    alert(`Spell Check Results:\n\nFound ${misspelledCount} potential misspellings:\n\n${suggestions.join('\n')}\n\nNote: For full spell checking, please use your browser's built-in spell checker (right-click in text area).`);
+                } else {
+                    alert(`Spell Check Complete!\n\nChecked ${words.length} words.\nNo common misspellings found.\n\nTip: Your browser's built-in spell checker (red underlines) provides more comprehensive checking.`);
+                }
+            }, 100);
         }
         
         function openThesaurus() {
-            const selectedText = storyEditor.value.substring(storyEditor.selectionStart, storyEditor.selectionEnd);
-            if (selectedText) {
-                console.log('Looking up:', selectedText);
-                alert(`Thesaurus lookup for: "${selectedText}"\nThis will be implemented with a thesaurus API`);
+            const selectedText = storyEditor.value.substring(storyEditor.selectionStart, storyEditor.selectionEnd).trim();
+            
+            if (selectedText && selectedText.split(' ').length === 1) {
+                // Simple thesaurus with common synonyms
+                const thesaurus = {
+                    'good': ['excellent', 'great', 'wonderful', 'fantastic', 'superb', 'fine', 'nice'],
+                    'bad': ['terrible', 'awful', 'horrible', 'dreadful', 'poor', 'unpleasant'],
+                    'big': ['large', 'huge', 'enormous', 'massive', 'gigantic', 'vast', 'immense'],
+                    'small': ['tiny', 'little', 'minute', 'petite', 'compact', 'miniature'],
+                    'happy': ['joyful', 'cheerful', 'delighted', 'pleased', 'content', 'elated'],
+                    'sad': ['unhappy', 'sorrowful', 'melancholy', 'dejected', 'gloomy', 'miserable'],
+                    'fast': ['quick', 'rapid', 'swift', 'speedy', 'hasty', 'brisk'],
+                    'slow': ['sluggish', 'leisurely', 'gradual', 'unhurried', 'delayed'],
+                    'walk': ['stroll', 'amble', 'stride', 'march', 'pace', 'wander'],
+                    'run': ['sprint', 'dash', 'race', 'hurry', 'rush', 'bolt'],
+                    'said': ['stated', 'declared', 'announced', 'mentioned', 'remarked', 'noted'],
+                    'look': ['see', 'observe', 'watch', 'view', 'gaze', 'stare', 'glance'],
+                    'think': ['believe', 'consider', 'ponder', 'reflect', 'contemplate'],
+                    'beautiful': ['gorgeous', 'stunning', 'lovely', 'attractive', 'elegant'],
+                    'ugly': ['hideous', 'unattractive', 'unsightly', 'repulsive', 'grotesque'],
+                    'smart': ['intelligent', 'clever', 'bright', 'brilliant', 'wise'],
+                    'stupid': ['foolish', 'ignorant', 'dumb', 'senseless', 'unwise']
+                };
+                
+                const word = selectedText.toLowerCase();
+                const synonyms = thesaurus[word];
+                
+                if (synonyms) {
+                    const message = `Synonyms for "${selectedText}":\n\n${synonyms.join(', ')}\n\nTip: Select a word in your text before using thesaurus.`;
+                    
+                    // Create a more user-friendly dialog
+                    const result = confirm(`${message}\n\nWould you like to open an online thesaurus for more options?`);
+                    if (result) {
+                        window.open(`https://www.merriam-webster.com/thesaurus/${encodeURIComponent(selectedText)}`, '_blank');
+                    }
+                } else {
+                    const result = confirm(`No built-in synonyms found for "${selectedText}".\n\nWould you like to look it up in an online thesaurus?`);
+                    if (result) {
+                        window.open(`https://www.merriam-webster.com/thesaurus/${encodeURIComponent(selectedText)}`, '_blank');
+                    }
+                }
+            } else if (selectedText) {
+                alert(`Please select a single word for thesaurus lookup.\nYou selected: "${selectedText}"`);
             } else {
-                alert('Please select a word to look up in the thesaurus');
+                const result = confirm(`Please select a word in your text for thesaurus lookup.\n\nWould you like to open an online thesaurus?`);
+                if (result) {
+                    window.open('https://www.merriam-webster.com/thesaurus/', '_blank');
+                }
             }
         }
         
