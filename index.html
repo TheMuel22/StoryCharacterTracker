@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Writing App</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>📖 Story Writer</h1>
+            <div class="header-controls">
+                <button id="darkModeToggle" class="icon-btn" title="Toggle Dark Mode">🌙</button>
+                <button id="settingsBtn" class="icon-btn" title="Settings">⚙️</button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Chapter Management -->
+            <div class="chapter-section">
+                <div class="section-header">
+                    <h2>📚 Chapters</h2>
+                    <button id="addChapter" class="btn-primary">+ New Chapter</button>
+                </div>
+                <div id="chaptersList" class="chapters-list">
+                    <!-- Chapters will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Writing Area -->
+            <div class="writing-section">
+                <div class="section-header">
+                    <h2 id="currentChapterTitle">✏️ Start Writing</h2>
+                    <div class="writing-controls">
+                        <button id="spellCheckBtn" class="btn-secondary">🔍 Spell Check</button>
+                        <button id="thesaurusBtn" class="btn-secondary">📝 Thesaurus</button>
+                        <button id="saveChapter" class="btn-primary">💾 Save</button>
+                    </div>
+                </div>
+                <div class="writing-area">
+                    <textarea id="chapterContent" placeholder="Start writing your story here..."></textarea>
+                    <div id="wordCount" class="word-count">Words: 0 | Characters: 0</div>
+                </div>
+            </div>
+
+            <!-- Character Tracker Integration -->
+            <div class="character-section">
+                <div class="section-header">
+                    <h2>👥 Characters & World</h2>
+                    <div class="integration-controls">
+                        <button id="connectTracker" class="btn-secondary">🔗 Connect Tracker</button>
+                        <button id="refreshData" class="btn-secondary">🔄 Refresh</button>
+                        <button id="toggleView" class="btn-secondary">🗺️ Map</button>
+                    </div>
+                </div>
+                
+                <!-- Connection Status -->
+                <div id="connectionStatus" class="connection-status">
+                    <span class="status-indicator offline"></span>
+                    <span class="status-text">Not connected</span>
+                </div>
+                
+                <!-- Tabbed Interface -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="characters">👥 Characters</button>
+                    <button class="tab-btn" data-tab="map">🗺️ Map</button>
+                    <button class="tab-btn" data-tab="places">📍 Places</button>
+                </div>
+                
+                <!-- Characters Tab -->
+                <div id="charactersTab" class="tab-content active">
+                    <div class="search-bar">
+                        <input type="text" id="characterSearch" placeholder="Search characters...">
+                        <button id="characterFilter" class="filter-btn">⚡ Filters</button>
+                    </div>
+                    <div id="charactersList" class="characters-list">
+                        <p class="placeholder">Connect your Character Tracker to see characters here</p>
+                    </div>
+                </div>
+                
+                <!-- Map Tab -->
+                <div id="mapTab" class="tab-content">
+                    <div class="map-controls">
+                        <button id="mapZoomIn" class="btn-icon">🔍+</button>
+                        <button id="mapZoomOut" class="btn-icon">🔍-</button>
+                        <button id="mapReset" class="btn-icon">🎯</button>
+                    </div>
+                    <div id="mapContainer" class="map-container">
+                        <canvas id="mapCanvas" class="map-canvas"></canvas>
+                        <div class="map-placeholder">
+                            <p>📍 Map will appear when connected to Character Tracker</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Places Tab -->
+                <div id="placesTab" class="tab-content">
+                    <div id="placesList" class="places-list">
+                        <p class="placeholder">Places will appear when connected</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Spell Check Modal -->
+        <div id="spellCheckModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>🔍 Spell Check Results</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div id="spellCheckResults" class="modal-body">
+                    <!-- Results will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Character Detail Modal -->
+        <div id="characterDetailModal" class="modal">
+            <div class="modal-content character-detail">
+                <div class="modal-header">
+                    <h3 id="characterDetailName">Character Details</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body character-detail-body">
+                    <div class="character-photo-container">
+                        <img id="characterPhoto" class="character-photo" alt="Character Photo">
+                        <div class="character-basic-info">
+                            <h4 id="characterFullName"></h4>
+                            <p id="characterTitle"></p>
+                            <p id="characterLocation"></p>
+                        </div>
+                    </div>
+                    <div class="character-tabs">
+                        <button class="char-tab-btn active" data-char-tab="basic">Basic Info</button>
+                        <button class="char-tab-btn" data-char-tab="physical">Physical</button>
+                        <button class="char-tab-btn" data-char-tab="personality">Personality</button>
+                        <button class="char-tab-btn" data-char-tab="background">Background</button>
+                    </div>
+                    <div class="character-tab-contents">
+                        <div id="basicTab" class="char-tab-content active"></div>
+                        <div id="physicalTab" class="char-tab-content"></div>
+                        <div id="personalityTab" class="char-tab-content"></div>
+                        <div id="backgroundTab" class="char-tab-content"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="insertCharacterRef" class="btn-primary">📝 Insert in Story</button>
+                    <button id="showCharacterOnMap" class="btn-secondary">🗺️ Show on Map</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Thesaurus Modal -->
+        <div id="thesaurusModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>📝 Thesaurus</h3>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="thesaurusInput" placeholder="Enter a word to find synonyms...">
+                    <div id="thesaurusResults">
+                        <!-- Results will appear here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

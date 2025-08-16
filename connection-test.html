@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Character Tracker Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 30px;
+        }
+        
+        .connection-form {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 16px;
+            margin-bottom: 15px;
+        }
+        
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        .test-button {
+            background: #2196F3;
+        }
+        
+        .test-button:hover {
+            background: #1976D2;
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+        }
+        
+        .status.connected {
+            background: rgba(76, 175, 80, 0.3);
+            color: #4CAF50;
+            border: 2px solid #4CAF50;
+        }
+        
+        .status.disconnected {
+            background: rgba(244, 67, 54, 0.3);
+            color: #f44336;
+            border: 2px solid #f44336;
+        }
+        
+        .endpoints-list {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .endpoints-list h3 {
+            margin-top: 0;
+            color: #fff;
+        }
+        
+        .endpoint {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+        
+        .instructions {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #fff;
+        }
+        
+        .step {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Character Tracker Connection Test</h1>
+        
+        <div class="connection-form">
+            <h3>📡 Server Connection</h3>
+            <input type="text" id="serverUrl" placeholder="Enter Character Tracker URL (e.g., http://192.168.1.100:8000)" value="http://192.168.1.100:8000">
+            <button onclick="connectToTracker()">Connect to Character Tracker</button>
+            <button onclick="testEndpoints()" class="test-button">Test API Endpoints</button>
+            <div id="connectionStatus" class="status disconnected">Disconnected - Enter your Character Tracker server URL above</div>
+        </div>
+        
+        <div class="endpoints-list">
+            <h3>🌐 Available API Endpoints</h3>
+            <div class="endpoint">/api/characters - Get all character data</div>
+            <div class="endpoint">/api/places - Get all places and locations</div>
+            <div class="endpoint">/api/map - Get map data and pins</div>
+            <div class="endpoint">/images/ - Access character photos and map images</div>
+        </div>
+        
+        <div class="instructions">
+            <h3>📖 How to Connect</h3>
+            
+            <div class="step">
+                <strong>Step 1:</strong> Start your Character Tracker desktop application
+            </div>
+            
+            <div class="step">
+                <strong>Step 2:</strong> Click "Export PDF" button to start the server
+            </div>
+            
+            <div class="step">
+                <strong>Step 3:</strong> Copy the server URL from the popup (should be automatically copied to clipboard)
+            </div>
+            
+            <div class="step">
+                <strong>Step 4:</strong> Paste the URL in the input field above and click "Connect"
+            </div>
+            
+            <div class="step">
+                <strong>Step 5:</strong> Once connected, go to your main web app to start writing with character integration!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let serverUrl = '';
+        
+        function connectToTracker() {
+            serverUrl = document.getElementById('serverUrl').value.trim();
+            const statusDiv = document.getElementById('connectionStatus');
+            
+            if (!serverUrl) {
+                statusDiv.className = 'status disconnected';
+                statusDiv.textContent = 'Please enter a server URL';
+                return;
+            }
+            
+            statusDiv.className = 'status disconnected';
+            statusDiv.textContent = 'Connecting...';
+            
+            // Test basic connection
+            fetch(serverUrl + '/api/characters')
+                .then(response => response.json())
+                .then(data => {
+                    statusDiv.className = 'status connected';
+                    statusDiv.textContent = `✅ Connected! Found ${data.length} characters`;
+                    
+                    // Store connection for the main app
+                    localStorage.setItem('characterTrackerUrl', serverUrl);
+                })
+                .catch(error => {
+                    statusDiv.className = 'status disconnected';
+                    statusDiv.textContent = `❌ Connection failed: ${error.message}`;
+                });
+        }
+        
+        function testEndpoints() {
+            if (!serverUrl) {
+                alert('Please connect to your Character Tracker first');
+                return;
+            }
+            
+            const endpoints = [
+                { path: '/api/characters', name: 'Characters' },
+                { path: '/api/places', name: 'Places' },
+                { path: '/api/map', name: 'Map Data' }
+            ];
+            
+            let results = 'API Endpoint Test Results:\\n\\n';
+            let promises = [];
+            
+            endpoints.forEach(endpoint => {
+                const promise = fetch(serverUrl + endpoint.path)
+                    .then(response => response.json())
+                    .then(data => {
+                        results += `✅ ${endpoint.name}: ${Array.isArray(data) ? data.length + ' items' : 'Data loaded'}\\n`;
+                    })
+                    .catch(error => {
+                        results += `❌ ${endpoint.name}: ${error.message}\\n`;
+                    });
+                promises.push(promise);
+            });
+            
+            Promise.all(promises).then(() => {
+                results += '\\n🎉 Connection test complete!\\n\\nYou can now use your main web app with Character Tracker integration.';
+                alert(results);
+            });
+        }
+        
+        // Auto-load saved connection
+        window.onload = function() {
+            const saved = localStorage.getItem('characterTrackerUrl');
+            if (saved) {
+                document.getElementById('serverUrl').value = saved;
+            }
+        };
+    </script>
+</body>
+</html>
