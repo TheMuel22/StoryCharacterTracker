@@ -1058,6 +1058,13 @@
                 return;
             }
             
+            if (syncInProgress) {
+                console.log('Sync already in progress, forcing reset...');
+                // Force reset if sync is stuck
+                syncInProgress = false;
+            }
+            
+            syncInProgress = true;
             updateConnectionStatus('Syncing all data...', true);
             console.log('=== SYNC START ===');
             
@@ -1100,13 +1107,24 @@
                 completeSyncProcess();
             });
             
-            // Absolute backup - complete sync after 2 seconds no matter what
+            // Absolute backup - complete sync after 1 second no matter what
             setTimeout(() => {
                 if (syncInProgress) {
-                    console.log('BACKUP TIMER: Forcing sync completion');
+                    console.log('🚨 EMERGENCY BACKUP TIMER: Forcing sync completion');
+                    syncInProgress = false; // Force reset the flag
                     completeSyncProcess();
                 }
-            }, 2000);
+            }, 1000);
+            
+            // Secondary backup in case the first one fails
+            setTimeout(() => {
+                if (syncInProgress) {
+                    console.log('🚨 SECONDARY BACKUP: Force enabling UI');
+                    syncInProgress = false;
+                    enableAllTabs();
+                    updateConnectionStatus('Sync forced complete (backup)', true);
+                }
+            }, 1500);
         }
         
         function completeSyncProcess() {
@@ -2070,6 +2088,27 @@
         function closeCharacterModal() {
             characterModal.style.display = 'none';
         }
+        
+        // Emergency function to reset UI if stuck
+        function emergencyReset() {
+            console.log('🚨 EMERGENCY RESET ACTIVATED');
+            syncInProgress = false;
+            connected = true;
+            enableAllTabs();
+            updateConnectionStatus('Emergency reset complete', true);
+            
+            // Re-enable all buttons
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.disabled = false;
+                btn.style.pointerEvents = 'auto';
+            });
+            
+            console.log('UI fully reset and enabled');
+        }
+        
+        // Make emergency reset available globally
+        window.emergencyReset = emergencyReset;
         
         function enableAllTabs() {
             // Force enable all tabs even if sync is incomplete
