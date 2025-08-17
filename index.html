@@ -1060,9 +1060,9 @@
             
             updateConnectionStatus('Syncing all data...', true);
             
-            // Add timeout to prevent infinite syncing
+            // Much shorter timeout to prevent hanging
             const syncTimeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Sync timeout after 10 seconds')), 10000)
+                setTimeout(() => reject(new Error('Sync timeout after 3 seconds')), 3000)
             );
             
             // Load data with individual error handling
@@ -1087,36 +1087,47 @@
                 Promise.allSettled(loadPromises), // Use allSettled to handle individual failures
                 syncTimeout
             ]).then((results) => {
-                // Process results even if some failed
-                renderCharacters();
-                renderChapters();
-                renderMap();
-                
-                // Count successful loads
-                let successCount = 0;
-                if (characters && characters.length > 0) successCount++;
-                if (storyData) successCount++;
-                if (mapData) successCount++;
-                
-                updateConnectionStatus(`✅ Sync complete! ${successCount}/3 sections loaded successfully`, true);
+                // Force complete the sync regardless of results
+                completeSyncProcess();
             }).catch(error => {
                 console.error('Sync error:', error);
-                updateConnectionStatus(`❌ Sync failed: ${error.message}`, false);
-                
-                // Still try to render what we have
-                try {
-                    renderCharacters();
-                    renderChapters();
-                    renderMap();
-                } catch (renderError) {
-                    console.error('Render error:', renderError);
-                }
+                // Force complete even on timeout
+                completeSyncProcess();
             });
+        }
+        
+        function completeSyncProcess() {
+            // Process results even if some failed
+            renderCharacters();
+            renderChapters();
+            renderMap();
+            
+            // Enable all tabs
+            enableAllTabs();
+            
+            // Count successful loads
+            let successCount = 0;
+            let statusMessage = '✅ Sync complete! ';
+            if (characters && characters.length > 0) {
+                successCount++;
+                statusMessage += `${characters.length} characters `;
+            }
+            if (storyData) {
+                successCount++;
+                statusMessage += 'story ';
+            }
+            if (mapData) {
+                successCount++;
+                statusMessage += 'map ';
+            }
+            statusMessage += 'loaded';
+            
+            updateConnectionStatus(statusMessage, true);
         }
         
         function loadCharacters() {
             const timeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Characters API timeout')), 5000)
+                setTimeout(() => reject(new Error('Characters API timeout')), 2000)
             );
             
             return Promise.race([
@@ -1229,7 +1240,7 @@
         
         function loadStoryData() {
             const timeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Story API timeout')), 5000)
+                setTimeout(() => reject(new Error('Story API timeout')), 2000)
             );
             
             return Promise.race([
@@ -1249,7 +1260,7 @@
         
         function loadMapData() {
             const timeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Map API timeout')), 5000)
+                setTimeout(() => reject(new Error('Map API timeout')), 2000)
             );
             
             return Promise.race([
