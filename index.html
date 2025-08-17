@@ -1097,6 +1097,9 @@
         }
         
         function completeSyncProcess() {
+            console.log('Completing sync process...');
+            syncInProgress = false;
+            
             // Process results even if some failed
             renderCharacters();
             renderChapters();
@@ -1120,9 +1123,9 @@
                 successCount++;
                 statusMessage += 'map ';
             }
-            statusMessage += 'loaded';
             
-            updateConnectionStatus(statusMessage, true);
+            syncStatus.textContent = statusMessage;
+            console.log('Sync completed successfully:', statusMessage);
         }
         
         function loadCharacters() {
