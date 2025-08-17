@@ -1137,7 +1137,8 @@
                 statusMessage += 'map ';
             }
             
-            syncStatus.textContent = statusMessage;
+            // Update both status displays properly
+            updateConnectionStatus(statusMessage, true);
             console.log('Sync completed successfully:', statusMessage);
         }
         
