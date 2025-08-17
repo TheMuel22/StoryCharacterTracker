@@ -1059,10 +1059,14 @@
             }
             
             updateConnectionStatus('Syncing all data...', true);
+            console.log('=== SYNC START ===');
             
-            // Much shorter timeout to prevent hanging
+            // Very aggressive 1.5-second timeout to prevent hanging
             const syncTimeout = new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('Sync timeout after 3 seconds')), 3000)
+                setTimeout(() => {
+                    console.log('SYNC TIMEOUT HIT - Force completing...');
+                    reject(new Error('Sync timeout after 1.5 seconds'));
+                }, 1500)
             );
             
             // Load data with individual error handling
@@ -1087,6 +1091,7 @@
                 Promise.allSettled(loadPromises), // Use allSettled to handle individual failures
                 syncTimeout
             ]).then((results) => {
+                console.log('Sync promises resolved:', results);
                 // Force complete the sync regardless of results
                 completeSyncProcess();
             }).catch(error => {
@@ -1094,6 +1099,14 @@
                 // Force complete even on timeout
                 completeSyncProcess();
             });
+            
+            // Absolute backup - complete sync after 2 seconds no matter what
+            setTimeout(() => {
+                if (syncInProgress) {
+                    console.log('BACKUP TIMER: Forcing sync completion');
+                    completeSyncProcess();
+                }
+            }, 2000);
         }
         
         function completeSyncProcess() {
